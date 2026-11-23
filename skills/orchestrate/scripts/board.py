@@ -73,11 +73,12 @@ def csv(s):
 
 
 SAFE_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
-SAFE_SHA = re.compile(r"^[0-9a-fA-F]{4,40}$")
+SAFE_REF = re.compile(r"^[^<>\"'&`\x00-\x1f]{1,500}$")  # a sha, or "p:ab12,k:cd34", "ghl:<id>@v6", "file:out.csv"
 
 
 def check_args(a):
-    """Ids, names and commits end up in STATUS.md and the Conductor page: allow only plain tokens."""
+    """Ids, names and commits end up in STATUS.md and the Conductor page: ids are plain tokens, commit refs
+    carry no HTML characters."""
     for k in ("id", "name", "lane", "by", "session"):
         if k == "name" and a.f is cmd_init:  # init --name is the display name, free text
             continue
@@ -86,8 +87,8 @@ def check_args(a):
             die(f"--{k} {v!r}: use letters, digits, dot, dash or underscore (max 64)")
     for k in ("commit", "sha"):
         v = getattr(a, k, None)
-        if isinstance(v, str) and v and not SAFE_SHA.match(v):
-            die(f"--{k} {v!r}: not a commit hash")
+        if isinstance(v, str) and v and not SAFE_REF.match(v):
+            die(f"--{k} {v!r}: no < > \" ' & ` or control characters, max 500")
     for w in csv(getattr(a, "waits", None) or "") if isinstance(getattr(a, "waits", None), str) else []:
         if not SAFE_ID.match(w):
             die(f"--waits {w!r}: not a task id")
