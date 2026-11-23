@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Conductor: project rows over a four-column board. Espresso tile, cream marks, one green done column. -->
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5a3833"/>
+      <stop offset="1" stop-color="#3f2523"/>
+    </linearGradient>
+  </defs>
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#g)"/>
+  <!-- rows: three project progress bars -->
+  <g>
+    <rect x="232" y="262" width="560" height="44" rx="22" fill="#fff8f0" opacity=".22"/>
+    <rect x="232" y="262" width="380" height="44" rx="22" fill="#fff8f0"/>
+    <rect x="232" y="342" width="560" height="44" rx="22" fill="#fff8f0" opacity=".22"/>
+    <rect x="232" y="342" width="290" height="44" rx="22" fill="#c08552"/>
+  </g>
+  <!-- board: four columns, the last one green (done) -->
+  <rect x="232" y="452" width="122" height="310" rx="30" fill="#fff8f0" opacity=".22"/>
+  <rect x="378" y="452" width="122" height="250" rx="30" fill="#c08552"/>
+  <rect x="524" y="452" width="122" height="190" rx="30" fill="#fff8f0"/>
+  <rect x="670" y="452" width="122" height="310" rx="30" fill="#2f9e6b"/>
+</svg>

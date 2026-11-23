@@ -1,0 +1,1698 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Projects | Conductor</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Cocoa palette: cream #FFF8F0, caramel #C08552, brown #8C5A3C, espresso #4B2E2B */
+  --bg:#fff8f0;--sf:#fffdf9;--sel:#fbf1e4;--col:#f6ebdd;--ink:#4b2e2b;--mute:#65402d;--line:#eddfd0;--soft:#f7ede1;--seg:#ebdccb;
+  --cream:#fff8f0;--caramel:#c08552;
+  --ac:#8c5a3c;--ac-d:#774a30;
+  --ok:#2f9e6b;--ok-t:#dff0e5;--ok-x:#1b5e3c;--ok-m:#b9ddc9;
+  --pg:#a8683a;--pg-t:#f4e3d0;--pg-x:#5e3210;--line2:#dcc6b0;
+  --warn:#d9941a;--warn-t:#fbe6b0;--warn-x:#573700;--warn-w:#fff6df;
+  --bd:#c23b30;--bd-t:#fbe1dc;--bd-x:#8e1f18;--bd-w:#fff3f0;
+  --out:cubic-bezier(.16,1,.3,1);
+  --shadow:0 1px 2px rgba(75,46,43,.07),0 1px 8px -2px rgba(75,46,43,.06);
+  --lift:0 10px 30px -8px rgba(75,46,43,.28),0 2px 6px rgba(75,46,43,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--bg);-webkit-text-size-adjust:100%}
+body{min-height:100vh;display:flex;background:var(--bg);font:400 14px/20px Figtree,-apple-system,"Segoe UI",system-ui,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased;accent-color:var(--ac);caret-color:var(--ac)}
+::selection{background:#ecd0b3;color:var(--ink)}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;text-align:inherit}
+a{color:inherit;text-decoration:none}
+svg{display:block}
+:focus{outline:none}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-radius:6px;box-shadow:0 0 0 5px var(--bg)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+*{scrollbar-width:thin;scrollbar-color:#d9c6b0 transparent}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#d9c6b0;border-radius:8px;border:2px solid transparent;background-clip:padding-box}
+.id,.tab,.pct,.n,.cnt{font-variant-numeric:tabular-nums}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:13px}
+
+/* ---------- shell ---------- */
+aside.side{width:216px;flex:none;height:100vh;position:sticky;top:0;padding:24px 12px;display:flex;flex-direction:column;gap:4px;background:var(--bg)}
+.brand{display:flex;align-items:center;gap:8px;padding:0 8px 24px;font-weight:700;font-size:16px;letter-spacing:-.01em}
+.brand svg{flex:none}
+.nav{position:relative;display:flex;align-items:center;gap:12px;height:36px;padding:0 8px;border-radius:8px;color:var(--mute);font-weight:500;width:100%;transition:background .15s,color .15s}
+.nav:hover{background:var(--soft);color:var(--ink)}
+.nav svg{width:18px;height:18px;flex:none}
+.nav.on{background:var(--soft);color:var(--ink);font-weight:600}
+.nav b{margin-left:auto;background:var(--sf);box-shadow:inset 0 0 0 1.5px var(--warn);color:var(--ink);border-radius:10px;min-width:22px;height:20px;padding:0 6px;font-size:13px;font-weight:700;text-align:center;line-height:20px;font-variant-numeric:tabular-nums}
+.nav b[hidden]{display:none}
+.nav b.bump{animation:bump .5s var(--out)}
+.demo{margin-top:auto;display:flex;flex-direction:column;gap:4px;padding:8px;border-radius:12px}
+.demo .dlab{font-size:13px;color:var(--mute);font-weight:600;padding:0 8px;margin-bottom:2px}
+.demo button{height:32px;border-radius:8px;display:flex;align-items:center;gap:8px;padding:0 8px;font-weight:600;font-size:13px;color:var(--ink);transition:background .15s}
+.demo button:hover{background:var(--soft)}
+.demo button svg{width:14px;height:14px}
+.demo kbd{margin-left:auto;font:600 13px/16px Figtree,sans-serif;color:var(--mute);border-radius:4px;padding:0 6px;background:var(--soft)}
+.foot{display:flex;align-items:center;gap:8px;padding:12px 8px 0;color:var(--mute);font-size:13px}
+.foot .a{margin:0;border-color:var(--bg)}
+.mob-only{display:none}
+
+main{flex:1;min-width:0;height:100vh;padding:28px 40px 0;display:flex;flex-direction:column;overflow-y:auto}
+.top{display:flex;align-items:baseline;min-height:44px;flex:none;gap:0}
+h1{font-size:32px;line-height:40px;font-weight:700;letter-spacing:-.025em}
+.top .sub{color:var(--mute);margin-left:16px;font-size:16px}
+.btn{height:36px;padding:0 16px;border-radius:8px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;transition:transform .12s var(--out),background .15s,box-shadow .15s}
+.btn.pr{background:var(--ac);color:var(--cream)}
+.btn.pr:hover{background:var(--ac-d)}
+.btn.gh{background:var(--soft)}
+.btn.gh:hover{background:var(--col)}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.5;cursor:default}
+.top .btn{margin-left:auto;align-self:center}
+
+/* ---------- project rows ---------- */
+.tbl{margin-top:20px;flex:none}
+.row{display:grid;grid-template-columns:minmax(200px,1fr) minmax(160px,1.3fr) 88px 156px 164px;gap:20px;align-items:center;padding:0 20px;border-radius:12px;height:72px;position:relative;cursor:pointer;transition:background .2s}
+.row:not(.th):hover{background:var(--soft)}
+.th{height:32px;font-size:13px;font-weight:600;color:var(--mute);cursor:default}
+.th>span:nth-child(3){text-align:right}
+.row.sel{background:var(--sf);box-shadow:var(--shadow)}
+.row.sel::before{content:"";position:absolute;left:5px;top:20px;bottom:20px;width:3px;border-radius:2px;background:var(--ac);animation:grow-y .3s var(--out) both}
+.name{display:flex;align-items:center;gap:12px;font-weight:700;font-size:17px;min-width:0}
+.name>div{min-width:0}
+.name .chev{width:16px;height:16px;color:var(--mute);flex:none;transition:transform .25s var(--out)}
+.row.sel .chev{transform:rotate(90deg);color:var(--ink)}
+.name a{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-radius:4px}
+.name small{display:block;font-weight:400;font-size:14px;line-height:20px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar{display:flex;gap:3px}
+.bar i{flex:1;height:12px;border-radius:3px;background:var(--seg);transform-origin:left center;min-width:0}
+.bar i.g-d{background:var(--ok)}
+.bar i.g-w{background:var(--pg)}
+.bar i.g-q{background:repeating-linear-gradient(135deg,var(--pg) 0 3px,#e3c3a2 3px 6px)}
+.bar i.g-f{background:var(--bd)}
+.bar i.new{animation:pop .6s var(--out)}
+.pct{text-align:right;font-weight:700;font-size:28px;line-height:32px;letter-spacing:-.02em}
+.st{height:24px;padding:0 12px 0 10px;border-radius:12px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;width:max-content;max-width:100%;white-space:nowrap}
+.st::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+.s-ok{color:var(--ink)}
+.s-wait{color:var(--warn-x);background:var(--warn-t)}
+.s-ok,.s-done,.s-near{background:none;padding-left:0}
+.s-ok::before{background:var(--pg)}
+.s-done::before{background:var(--ok)}
+.s-near{color:var(--mute)}
+.s-done{color:var(--ok-x)}
+.avs{display:flex;align-items:center}
+
+/* avatars */
+.ab{position:relative;display:flex;align-items:center;justify-content:center;border-radius:50%;margin-left:-6px;flex:none;transition:transform .15s var(--out)}
+.ab:first-child{margin-left:0}
+.ab:hover{transform:translateY(-2px);z-index:2}
+.a,.av{position:relative;border-radius:50%;background:var(--col);font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;flex:none;color:var(--ink)}
+.a{width:28px;height:28px;border:2px solid var(--sf)}
+.sel .a{border-color:var(--sel)}
+.row:hover .a{border-color:var(--sel)}
+.av{width:24px;height:24px}
+.a.lg{width:44px;height:44px;font-size:16px;border:0}
+.a.md{width:32px;height:32px;border:0}
+.dot{position:absolute;right:-3px;bottom:-3px;width:10px;height:10px;border-radius:50%;border:2px solid var(--sf);background:var(--mute)}
+.sel .a .dot{border-color:var(--sel)}
+.lg .dot{width:14px;height:14px;right:-2px;bottom:-2px;border-width:3px}
+.dot.working{background:var(--pg)}
+.dot.quiet{background:var(--warn);border-radius:2px;transform:rotate(45deg)}
+.dot.idle{background:var(--sf);box-shadow:inset 0 0 0 2px var(--mute)}
+.dot.gone{background:linear-gradient(var(--sf),var(--sf)) center/4px 1.5px no-repeat,var(--mute)}
+.st-gone{box-shadow:0 0 0 1px var(--mute);background:repeating-linear-gradient(135deg,var(--soft) 0 3px,#e6d6c4 3px 5px)}
+.dot.working::after{content:"";position:absolute;inset:-2px;border-radius:50%;border:2px solid var(--pg);opacity:0;animation:ping 4.4s var(--out) infinite}
+.av.none{background:none;box-shadow:none;border:1px dashed var(--mute)}
+.a.amore{background:var(--sf);box-shadow:inset 0 0 0 1px var(--line2);font-size:12px;font-weight:700;color:var(--ink);letter-spacing:-.02em}
+.ab:hover .a.amore{box-shadow:inset 0 0 0 1.5px var(--ac)}
+
+/* ---------- board ---------- */
+.bh{display:flex;align-items:center;gap:12px;margin-top:32px;min-height:36px;flex:none;flex-wrap:wrap}
+h2{font-size:20px;line-height:28px;font-weight:700;letter-spacing:-.015em}
+.bh .sub{color:var(--mute)}
+.lnk{color:var(--ink);font-weight:600;text-decoration:underline;text-decoration-color:var(--caramel);text-decoration-thickness:2px;text-underline-offset:3px;border-radius:2px;transition:text-decoration-color .15s}
+.lnk:hover{text-decoration-color:var(--ac)}
+.stage{flex:1;margin-top:8px;display:flex;min-height:340px}
+.board{flex:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;min-height:0;min-width:0}
+.col{background:var(--col);border-radius:16px 16px 0 0;padding:16px 12px 0;display:flex;flex-direction:column;min-height:0;min-width:0}
+.ch{display:flex;align-items:center;gap:8px;padding:0 4px 12px;font-weight:600;flex:none}
+.ch svg{flex:none}
+.ch .n{margin-left:auto;color:var(--mute);font-weight:600;font-size:13px}
+.cl{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin:0 -12px;padding:2px 12px 24px}
+.card{background:var(--sf);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow);cursor:pointer;text-align:left;width:100%;flex:none;transition:transform .2s var(--out),box-shadow .2s,border-color .2s}
+.card:hover{transform:translateY(-2px);box-shadow:0 8px 18px -6px rgba(75,46,43,.24),var(--shadow)}
+.card.sel{box-shadow:0 0 0 2px var(--ac)}
+.card h3{font-size:14px;line-height:20px;font-weight:600}
+.card p{font-size:14px;line-height:20px;color:var(--mute);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.meta{display:flex;align-items:center;gap:8px;color:var(--mute);font-size:13px}
+.meta .av{margin-left:auto}
+/* chips are outlined on white, never filled: text always sits on a plain surface */
+.chip{height:22px;padding:0 10px;border-radius:11px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;background:var(--sf);box-shadow:inset 0 0 0 1px var(--line2);color:var(--ink);white-space:nowrap}
+.c-w{color:var(--warn-x);box-shadow:inset 0 0 0 1.5px var(--warn)}
+.c-b{color:var(--bd-x);box-shadow:inset 0 0 0 1.5px var(--bd)}
+.card.wait{box-shadow:0 0 0 1.5px var(--warn),var(--shadow)}
+.card.fail{box-shadow:0 0 0 1.5px var(--bd),var(--shadow)}
+.card.wait:hover,.card.fail:hover{box-shadow:0 8px 18px -6px rgba(75,46,43,.24)}
+.card.dn h3{text-decoration:line-through;text-decoration-color:#b79a82;color:var(--mute);font-weight:500}
+.card.landed{animation:landed 1.4s var(--out)}
+.note{color:var(--mute);font-size:14px;padding:12px 4px}
+.more{color:var(--mute);font-size:13px;font-weight:600;padding:0 4px;min-height:32px;display:flex;align-items:center;border-radius:6px;flex:none;transition:color .15s}
+.more:hover{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+
+/* ---------- drawer ---------- */
+.scrim{position:fixed;inset:0;background:rgba(75,46,43,.32);opacity:0;visibility:hidden;transition:opacity .2s,visibility 0s .2s;z-index:30}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:408px;max-width:100%;background:var(--bg);box-shadow:var(--lift);z-index:40;display:flex;flex-direction:column;transform:translateX(24px);opacity:0;visibility:hidden;transition:transform .26s var(--out),opacity .2s,visibility 0s .26s}
+.drawer.open{transform:none;opacity:1;visibility:visible;transition-delay:0s}
+.dh{display:flex;align-items:center;gap:8px;padding:16px 16px 0 24px;min-height:56px;flex:none}
+.dh .grow{flex:1;display:flex;align-items:center;gap:8px;min-width:0}
+.x{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--mute);transition:background .15s,color .15s;flex:none}
+.x:hover{background:var(--soft);color:var(--ink)}
+.x svg{width:18px;height:18px}
+.db{padding:8px 24px 32px;overflow-y:auto;flex:1}
+.db h2{font-size:24px;line-height:32px;letter-spacing:-.02em;margin-bottom:16px}
+.db h4{font-size:14px;font-weight:600;color:var(--ink);margin:28px 0 8px}
+.dl{display:grid;grid-template-columns:96px 1fr;gap:12px 8px;align-items:center}
+.dl dt{color:var(--mute);font-size:13px;font-weight:600}
+.dl dd{display:flex;flex-wrap:wrap;gap:8px;align-items:center;min-width:0}
+.dl dd.col1{flex-direction:column;align-items:stretch;gap:4px}
+.dash{color:var(--mute)}
+.tp{display:flex;align-items:center;gap:8px;min-height:36px;padding:0 12px 0 8px;border-radius:8px;background:var(--sf);box-shadow:inset 0 0 0 1px var(--line2);font-size:14px;font-weight:600;max-width:100%;transition:background .15s,box-shadow .15s}
+.tp:hover{box-shadow:inset 0 0 0 1px var(--ac);background:var(--sf)}
+.tp .tn{font-weight:500;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.tp svg{width:16px;height:16px;flex:none}
+.tp.big{min-height:48px;width:100%;padding:0 12px}
+.tp.big .r{margin-left:auto;font-weight:500;color:var(--mute)}
+.qa{border-radius:12px;padding:12px 16px;background:var(--sf);box-shadow:inset 0 0 0 1px var(--line2);font-size:14px;line-height:20px;margin-top:8px}
+.qa.ok{box-shadow:inset 0 0 0 1.5px var(--ok)}
+.qa.pg{box-shadow:inset 0 0 0 1.5px var(--pg)}
+.qa.bad{box-shadow:inset 0 0 0 1.5px var(--bd)}
+.qa.warn{box-shadow:inset 0 0 0 1.5px var(--warn)}
+.qa b{display:block;font-size:14px;margin-bottom:4px}
+.sline{display:flex;align-items:center;gap:12px;padding:12px 0 20px}
+.sline .t{font-size:13px;color:var(--mute)}
+.sline .t b{display:block;font-size:18px;color:var(--ink);line-height:24px}
+.w{border-radius:12px;padding:16px;margin-bottom:12px;display:flex;flex-direction:column;gap:12px;background:var(--sf);box-shadow:var(--shadow);transition:background .2s,border-color .2s}
+.w.hl{box-shadow:0 0 0 2px var(--ac)}
+.w.dn{box-shadow:inset 0 0 0 1px var(--line2)}
+.w-top{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mute);font-weight:500}
+.w-top .chip{margin-right:0}
+.w-top .age{margin-left:auto;font-variant-numeric:tabular-nums}
+.w h3{font-size:16px;line-height:24px;font-weight:600}
+.w .det{color:var(--mute)}
+.rec{background:var(--sf);box-shadow:inset 0 0 0 1px var(--line2);border-radius:8px;padding:12px;font-size:14px}
+.rec b{display:block;font-size:13px;color:var(--mute);margin-bottom:4px}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{min-height:40px;padding:8px 12px;border-radius:8px;box-shadow:inset 0 0 0 1px #dcc6b0;display:flex;align-items:center;gap:8px;font-weight:500;transition:box-shadow .15s,background .15s}
+.opt:hover{box-shadow:inset 0 0 0 1.5px var(--ac);background:var(--sel)}
+.hold{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px;color:var(--mute);font-weight:600}
+.hold .hd{flex:1 0 100%}
+.hold .tp{min-height:32px;padding:0 12px}
+.ans{display:flex;align-items:center;gap:8px;color:var(--ink);font-weight:600}
+.ans svg{width:18px;height:18px;flex:none}
+.ans .btn{margin-left:auto}
+.srow{display:flex;align-items:center;gap:12px;width:100%;min-height:52px;padding:6px 8px;border-radius:8px;transition:background .15s}
+.srow:hover{background:var(--soft)}
+.srow .tx{min-width:0;flex:1}
+.srow .tx b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srow .tx span{display:block;font-size:14px;color:var(--mute)}
+.srow .r{font-size:13px;color:var(--mute);font-weight:600}
+
+/* ---------- states ---------- */
+.state{margin-top:20px;background:var(--sf);box-shadow:var(--shadow);border-radius:16px;padding:24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.state .ico{width:44px;height:44px;border-radius:12px;background:var(--soft);display:flex;align-items:center;justify-content:center;flex:none}
+.state .ico svg{width:22px;height:22px}
+.state .ico.bad{background:var(--bd-t);color:var(--bd-x)}
+.state .grow{flex:1;min-width:200px}
+.state h2{font-size:16px}
+.state p{color:var(--mute)}
+.sk{display:block;border-radius:6px;background:linear-gradient(90deg,var(--soft) 0 40%,#fffaf3 50%,var(--soft) 60% 100%);background-size:250% 100%;animation:shim 1.4s linear infinite}
+.row.skr{cursor:default;pointer-events:none}
+.card.skc{pointer-events:none;height:64px}
+
+/* tooltip */
+#tip{position:fixed;z-index:60;pointer-events:none;background:var(--ink);color:var(--cream);font-size:13px;line-height:16px;font-weight:500;padding:6px 10px;border-radius:6px;max-width:260px;white-space:pre-line;opacity:0;transition:opacity .12s}
+#tip.on{opacity:1}
+
+/* ---------- motion ---------- */
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes seg{from{transform:scaleX(0);opacity:0}to{transform:none;opacity:1}}
+@keyframes grow-y{from{transform:scaleY(0)}to{transform:none}}
+@keyframes pop{0%{transform:scaleY(1)}30%{transform:scaleY(1.9)}100%{transform:scaleY(1)}}
+@keyframes ping{0%{transform:scale(.9);opacity:.6}20%{transform:scale(2.3);opacity:0}100%{transform:scale(2.3);opacity:0}}
+@keyframes landed{0%{box-shadow:0 0 0 0 rgba(168,104,58,.7)}60%{box-shadow:0 0 0 7px rgba(168,104,58,0)}100%{box-shadow:var(--shadow)}}
+@keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.25)}100%{transform:scale(1)}}
+@keyframes shim{from{background-position:100% 0}to{background-position:-100% 0}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.rise{animation:rise .3s var(--out) calc(var(--d,0)*1ms) both}
+.segin{animation:seg .3s var(--out) calc(var(--d,0)*1ms + var(--k,0)*10ms) both}
+.fadein{animation:fade .25s var(--out) both}
+
+/* ---------- responsive ---------- */
+@media (max-width:1100px){
+  aside.side{width:64px;padding:20px 8px;align-items:center}
+  .brand{padding:0 0 24px}.brand span{display:none}
+  .nav{width:44px;height:44px;justify-content:center;padding:0}
+  .nav span.l{display:none}
+  .nav b{position:absolute;top:2px;right:0;min-width:18px;height:18px;line-height:18px;padding:0 4px;margin:0;font-size:13px}
+  .demo{padding:4px;background:none;align-items:center}
+  .demo .dlab,.demo button span,.demo kbd{display:none}
+  .demo button{width:44px;height:44px;justify-content:center;padding:0;background:var(--soft)}
+  .demo button svg{width:18px;height:18px}
+  .foot{padding:12px 0 0}.foot span.tx{display:none}
+  main{padding:20px 24px 0}
+  .row{grid-template-columns:minmax(150px,1fr) minmax(100px,1fr) 76px 148px 128px;gap:12px}
+}
+@media (max-width:860px){
+  .row{grid-template-columns:minmax(140px,1fr) minmax(80px,1fr) 72px 0 120px}
+  .row>:nth-child(4){display:none}
+  .board{gap:12px}
+}
+@media (max-width:720px){
+  html,body{height:auto}
+  body{flex-direction:column;overflow-x:hidden}
+  aside.side{width:100%;height:56px;position:sticky;top:0;z-index:20;flex-direction:row;align-items:center;padding:0 12px 0 16px;gap:4px;border-right:0;box-shadow:0 1px 0 var(--line)}
+  .brand{padding:0;margin-right:auto}.brand span{display:inline}
+  .nav{width:44px;height:44px}
+  .foot{display:none}
+  .demo{margin:0;padding:0;flex-direction:row}
+  .demo button.rst{display:none}
+  main{height:auto;overflow:visible;padding:16px 16px 0}
+  .top{flex-wrap:wrap;row-gap:0}
+  .top .sub{width:100%;margin:0;order:3;font-size:14px}
+  .top .btn{height:44px}
+  .tbl{background:none;border:0;border-radius:0;overflow:visible;display:flex;flex-direction:column;gap:8px}
+  .th{display:none}
+  h1{font-size:28px;line-height:36px}
+  .pct{font-size:24px}
+  .row{height:auto}
+  .row{grid-template-columns:1fr auto;grid-template-areas:"nm pc" "br br" "st st" "av av";height:auto;padding:12px 16px;gap:12px 8px;background:var(--sf);box-shadow:var(--shadow);border-radius:16px}
+  .row.sel{background:var(--sf);box-shadow:0 0 0 2px var(--ac)}
+  .row.sel::before{display:none}
+  .row>:nth-child(1){grid-area:nm}.row>:nth-child(2){grid-area:br}.row>:nth-child(3){grid-area:pc}
+  .row>:nth-child(4){grid-area:st;display:block}.row>:nth-child(5){grid-area:av;justify-self:start;min-width:0}
+  .name a{min-height:24px}
+  .name small{white-space:normal}
+  .brand{min-height:44px}
+  .lnk{min-height:40px;display:inline-flex;align-items:center}
+  .name a{padding:10px 0}
+  .ab{min-width:40px;height:40px;margin-left:-6px}
+  .bh{margin-top:20px;row-gap:8px}
+  .bh h2{flex:1 0 100%}
+  .bh .sub{flex:1}
+  .stage{display:block;min-height:0;margin-top:8px}
+  .board{display:flex;overflow-x:auto;scroll-snap-type:x proximity;gap:12px;margin:0 -16px;padding:0 16px 24px;scroll-padding:0 16px;align-items:flex-start}
+  .col{flex:0 0 82%;scroll-snap-align:start;border-radius:16px;padding-bottom:12px}
+  .cl{overflow:visible;margin:0;padding:2px 0 0}
+  .card{padding:14px 12px}
+  .more{min-height:40px}
+  .drawer{width:100%;border-left:0;border-radius:16px 16px 0 0;top:auto;height:86vh;transform:translateY(24px)}
+  .drawer.open{transform:none}
+  .scrim.on{opacity:1;visibility:visible;transition-delay:0s}
+  .db{padding:8px 16px 32px}
+  .dh{padding:8px 8px 0 16px}
+  .opt,.btn{min-height:44px}
+  .tp{min-height:40px}.hold .tp{min-height:40px}
+  .mob-only{display:flex}
+  .mk::after{inset:-12px}
+}
+@media (pointer:coarse){
+  .nav{height:44px}
+  .key summary{height:40px;width:40px}
+  .ab::after{content:"";position:absolute;inset:-6px}
+  .x{width:44px;height:44px}
+  .tp,.srow{min-height:44px}
+  .opt{min-height:44px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+
+/* ---------- progress ramp: one scale for percent text, rings, bars, chips ---------- */
+.r0{--rc:#574a46;--rt:#c4b3a8}
+.r1{--rc:#6a472a;--rt:#dbb48b}
+.r2{--rc:#7d410d;--rt:#dbb48b}
+.r3{--rc:#55280a;--rt:#c9a07a}
+.r4{--rc:#0f5a37;--rt:#9cc8b0}
+.pct{color:var(--rc)}
+.pm{width:10px;height:10px;border-radius:3px;flex:none;display:inline-block;box-shadow:0 0 0 1.5px var(--sf)}
+.strip{margin-top:20px;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.pchip{height:40px;display:inline-flex;align-items:center;gap:8px;padding:0 14px 0 12px;background:var(--sf);box-shadow:var(--shadow);border-radius:20px;font-weight:600;white-space:nowrap;max-width:100%;transition:background .15s,border-color .15s,transform .12s var(--out)}
+a.pchip:hover{background:var(--sel);box-shadow:0 0 0 1.5px var(--caramel)}
+a.pchip:active{transform:scale(.97)}
+.pchip.all{background:var(--soft);box-shadow:none}
+.pchip.all .pc{font-size:16px}
+.pchip .pc{color:var(--rc);font-weight:700;font-variant-numeric:tabular-nums}
+.pchip .pn{overflow:hidden;text-overflow:ellipsis}
+.pchip small{font-size:13px;color:var(--mute);font-weight:500}
+.ring{flex:none}
+.rf.a{animation:ringin .6s var(--out) both}
+@keyframes ringin{from{stroke-dashoffset:var(--c)}}
+.fl{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.fchip{height:40px;padding:0 14px;border-radius:20px;background:var(--soft);font-weight:500;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;transition:background .2s,color .2s,border-color .2s}
+.fchip:hover{background:var(--col)}
+.fchip[aria-pressed=true]{background:var(--ink);color:var(--cream);font-weight:600}
+.ptag{display:flex;align-items:center;gap:6px;font-size:13px;line-height:16px;color:var(--mute);font-weight:600;min-width:0}
+.ptag span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stage[hidden],#strip[hidden],#tbl[hidden],#bh[hidden],#sess[hidden]{display:none}
+
+/* ---------- sessions page ---------- */
+.sessions{margin-top:20px;padding-bottom:40px;display:flex;flex-direction:column;gap:40px}
+.sp .sh{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.sp .sh .sub{color:var(--mute);font-weight:400;font-size:14px;letter-spacing:0}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.scard{background:var(--sf);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow);width:100%;cursor:pointer;text-align:left;transition:transform .2s var(--out),box-shadow .2s,border-color .2s}
+.scard:hover{transform:translateY(-2px);box-shadow:0 8px 18px -6px rgba(75,46,43,.24),var(--shadow)}
+.scard:active{transform:scale(.98)}
+.scard.sel{box-shadow:0 0 0 2px var(--ac)}
+.scard.sc-gone{background:transparent;box-shadow:none;outline:1px dashed var(--mute);outline-offset:-1px}
+.sc-h{display:flex;align-items:center;gap:12px}
+.sc-h .tx{min-width:0;flex:1}
+.sc-h .tx b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sc-h .tx span{display:block;font-size:14px;line-height:20px;color:var(--mute)}
+.sch{height:26px;padding:0 10px;border-radius:13px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;flex:none;background:var(--sf);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line2)}
+.sch i{width:8px;height:8px;border-radius:50%;background:currentColor}
+.sch-quiet{color:var(--warn-x);box-shadow:inset 0 0 0 1.5px var(--warn)}
+.sch-idle i{background:none;box-shadow:inset 0 0 0 2px var(--mute)}
+.sch-gone{box-shadow:inset 0 0 0 1px var(--mute)}
+.now{display:flex;flex-direction:column;gap:4px;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.nl{font-size:13px;line-height:18px;font-weight:600;color:var(--mute)}
+.nt{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.nt b{font-size:18px;line-height:24px;font-weight:700;color:var(--ink)}
+.mg{display:grid;grid-template-columns:104px 1fr;gap:6px 12px;font-size:14px;line-height:20px}
+.ml{font-size:13px;font-weight:600;color:var(--mute)}
+.mv{color:var(--ink);min-width:0;overflow-wrap:anywhere}
+.mv b{font-weight:600}
+.mv .mono{font-size:13px}
+.scard.sc-quiet{box-shadow:0 0 0 1.5px var(--warn),var(--shadow)}
+@media (max-width:720px){
+  .fl{margin-left:0;flex:1 0 100%}
+  .sgrid{grid-template-columns:1fr}
+  .scard{padding:14px}
+  .sessions{margin-top:12px;gap:24px}
+}
+@media (max-width:480px){
+  .brand span{display:none}
+  aside.side{padding:0 8px 0 12px}
+}
+
+/* ---------- v2 pass: green = done, plain surfaces, readable text ---------- */
+.row:not(.th):not(.sel)::after{content:"";position:absolute;left:20px;right:20px;bottom:0;height:1px;background:var(--line)}
+.row.sel{box-shadow:0 0 0 1.5px var(--ac),var(--shadow)}
+.row.sel::before{left:6px;top:18px;bottom:18px;width:4px}
+.row>:nth-child(3){justify-self:end}
+.avs{gap:4px}.avs .ab,.avs .ab:first-child{margin-left:0}
+@media (max-width:1100px){.row{grid-template-columns:minmax(150px,1fr) minmax(100px,1fr) 76px 148px 164px}}
+@media (max-width:860px){.row{grid-template-columns:minmax(140px,1fr) minmax(80px,1fr) 72px 0 164px}}
+.avs{justify-content:flex-start}
+.st{font-size:14px;height:28px}
+.s-wait{box-shadow:inset 0 0 0 1.5px var(--warn);background:var(--sf)}
+.key{position:relative;margin-left:auto;font-size:14px}
+.legrow{margin-top:12px;display:flex;justify-content:flex-end}
+.legrow .key{margin-left:0}
+.key summary{list-style:none;cursor:pointer;width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;gap:0;padding:0;font-size:0;border-radius:16px;font-weight:600;color:var(--ink);box-shadow:inset 0 0 0 1px var(--line2);background:var(--sf)}
+.key summary::-webkit-details-marker{display:none}
+.key summary::before{content:"";width:16px;height:6px;border-radius:3px;background:linear-gradient(90deg,#574a46 0 20%,#6a472a 20% 40%,#7d410d 40% 60%,#55280a 60% 80%,#0f5a37 80%)}
+.key summary:hover,.key[open] summary{background:var(--soft)}
+.kp{position:absolute;right:0;top:38px;z-index:25;width:max-content;max-width:min(520px,calc(100vw - 32px));background:var(--sf);border-radius:12px;padding:16px;box-shadow:var(--lift);display:flex;flex-direction:column;gap:8px}
+.kh{font-weight:700;font-size:14px}
+.kr{display:flex;flex-wrap:wrap;gap:8px 16px;margin-bottom:8px}
+.kr:last-child{margin-bottom:0}
+.ki{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--ink);font-variant-numeric:tabular-nums}
+.bar-s{width:24px;height:12px;border-radius:3px;background:var(--seg)}
+.bar-s.g-d{background:var(--ok)}.bar-s.g-w{background:var(--pg)}.bar-s.g-f{background:var(--bd)}
+.bar-s.g-q{background:repeating-linear-gradient(135deg,var(--pg) 0 3px,#e3c3a2 3px 6px)}
+.rs{width:24px;height:12px;border-radius:3px;background:var(--rc)}
+.strip .key{margin-left:auto}
+.keyslot{margin-left:12px;align-self:center;display:inline-flex}.keyslot .key{margin-left:0}.keyslot .kp{left:0;right:auto;top:38px}
+@media (max-width:720px){.keyslot{margin-left:auto;order:2}.keyslot .kp{left:auto;right:0}}
+/* ---------- live app additions ---------- */
+.demo[hidden]{display:none!important}
+.dot.stopped{background:var(--mute);border-radius:2px}
+.sch-stopped i{border-radius:2px;background:var(--mute)}
+.rec .why{display:block;margin-top:8px}
+.opt.rk{background:var(--ac);color:var(--cream);box-shadow:none;font-weight:600}
+.opt.rk:hover{background:var(--ac-d);box-shadow:none}
+.opt:disabled,.opt:disabled:hover{opacity:.5;cursor:default}
+.free{display:flex;gap:8px}
+.fin{flex:1;min-width:0;height:40px;padding:0 12px;border-radius:8px;border:0;background:var(--sf);box-shadow:inset 0 0 0 1px var(--line2);font:inherit;color:var(--ink)}
+.fin::placeholder{color:var(--mute);opacity:1}
+.fin:focus{box-shadow:inset 0 0 0 1.5px var(--ac)}
+.err{color:var(--bd-x);font-size:14px;font-weight:600}
+.stuck{display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:var(--mute)}
+.row.er{cursor:default}.row.er:hover{background:none}
+.row.er .name{color:var(--mute);font-size:15px;font-weight:600}
+.row.er .name svg{width:16px;height:16px;flex:none}
+.row.er>:not(:first-child){display:none!important}
+@media (max-width:720px){.fin{height:44px}.row.er{grid-template-columns:1fr;grid-template-areas:"nm"}}
+/* ---------- live sessions (closed), finished projects, archive ---------- */
+:root{--cl:#6b6461}
+.dot.closed{background:var(--sf);border-radius:2px;box-shadow:inset 0 0 0 2px var(--cl)}
+.st-closed{background:var(--soft);color:var(--mute)}
+.sch-closed{box-shadow:inset 0 0 0 1px var(--cl)}
+.sch-closed i{border-radius:2px;background:none;box-shadow:inset 0 0 0 2px var(--cl)}
+.scard.sc-closed{background:var(--bg);box-shadow:inset 0 0 0 1px var(--line2)}
+.scard.sc-closed:hover{box-shadow:inset 0 0 0 1px var(--line2),0 8px 18px -6px rgba(75,46,43,.16)}
+.scard.sc-closed.sel{box-shadow:0 0 0 2px var(--ac)}
+.scard.sc-closed .a{background:var(--soft);color:var(--mute)}
+.scard.sc-closed .nt b{font-weight:600;color:var(--mute)}
+.sgrid[hidden]{display:none}
+.sfold{display:flex;align-items:center;gap:10px;min-height:40px;padding:0 8px;margin:-4px -8px;border-radius:8px;font-weight:700;max-width:calc(100% + 16px);transition:background .15s}
+.sfold:hover{background:var(--soft)}
+.sfold .chev{width:16px;height:16px;color:var(--mute);flex:none;transition:transform .25s var(--out)}
+.sfold[aria-expanded=true] .chev{transform:rotate(90deg)}
+.sp.fold .sh{margin-bottom:0}
+.nml{display:flex;align-items:center;gap:8px;min-width:0}
+.nml a{min-width:0}
+.fdone{width:18px;height:18px;flex:none}
+.name small.err{color:var(--bd-x);font-weight:600;white-space:normal}
+.wm .row{grid-template-columns:minmax(200px,1fr) minmax(160px,1.3fr) 88px 156px 164px 40px}
+.wm .row.er .name{grid-column:1 / 6}
+.wm .row.er>:last-child{display:flex!important}
+.mc{display:flex;justify-content:flex-end}
+.mbtn{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--mute);transition:background .15s,color .15s}
+.mbtn:hover,.mbtn[aria-expanded=true]{background:var(--col);color:var(--ink)}
+.mbtn svg{width:18px;height:18px}
+.menu{position:fixed;z-index:50;min-width:224px;background:var(--sf);border-radius:12px;box-shadow:var(--lift);padding:6px;display:flex;flex-direction:column}
+.menu[hidden]{display:none}
+.menu button{min-height:40px;padding:0 12px;border-radius:8px;font-weight:500;display:flex;align-items:center;gap:10px;white-space:nowrap}
+.menu button:hover,.menu button:focus{background:var(--soft)}
+.menu button svg{width:16px;height:16px;flex:none;color:var(--mute)}
+.arch{margin-top:12px}
+.afold{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 12px 0 8px;margin-left:12px;border-radius:8px;color:var(--mute);font-weight:600;transition:background .15s,color .15s}
+.afold:hover{background:var(--soft);color:var(--ink)}
+.afold .chev{width:14px;height:14px;transition:transform .25s var(--out)}
+.afold[aria-expanded=true] .chev{transform:rotate(90deg)}
+.alist{display:flex;flex-direction:column;margin-top:4px}
+.alist[hidden]{display:none}
+.arow{display:flex;align-items:center;gap:8px 16px;min-height:60px;padding:8px 20px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.arow .an{flex:1;min-width:160px}
+.arow .an b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.arow .an small{display:block;font-size:14px;color:var(--mute)}
+.arow .an small.err{color:var(--bd-x);font-weight:600}
+.arow .apc{font-weight:700;font-size:18px;color:var(--rc);font-variant-numeric:tabular-nums;min-width:52px;text-align:right}
+.arow .acts{margin-left:auto}
+.arow .btn{height:40px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:55;background:var(--sf);color:var(--ink);box-shadow:var(--lift);border-radius:12px;min-height:52px;padding:6px 6px 6px 16px;display:flex;align-items:center;gap:12px;font-weight:600;max-width:calc(100vw - 32px)}
+.toast[hidden]{display:none}
+.toast .btn{height:40px}
+.toast .btn[hidden]{display:none}
+.toast:not(:has(.btn:not([hidden]))){padding-right:16px}
+dialog.dlg{margin:auto;border:0;border-radius:16px;padding:24px;width:min(420px,calc(100vw - 32px));background:var(--sf);color:var(--ink);box-shadow:var(--lift)}
+dialog.dlg::backdrop{background:rgba(75,46,43,.32)}
+.dlg h2{font-size:18px;line-height:24px;margin-bottom:8px;overflow-wrap:anywhere}
+.dlg p{color:var(--mute)}
+.dlg .acts{justify-content:flex-end;margin-top:20px}
+.dlg .btn{min-height:40px}
+@media (max-width:1100px){.wm .row{grid-template-columns:minmax(150px,1fr) minmax(100px,1fr) 76px 148px 164px 40px}}
+@media (max-width:860px){.wm .row{grid-template-columns:minmax(140px,1fr) minmax(80px,1fr) 72px 0 164px 40px}}
+@media (max-width:720px){
+  .wm .row{grid-template-columns:1fr auto 40px;grid-template-areas:"nm pc mo" "br br br" "st st st" "av av av"}
+  .wm .row>:nth-child(6){grid-area:mo;align-self:start}
+  .wm .row.er{grid-template-columns:1fr 40px;grid-template-areas:"nm mo"}
+  .wm .row.er .name{grid-column:auto;grid-area:nm}
+  .afold{margin-left:0}
+  .arow{padding:12px 16px;background:var(--sf);border-radius:16px;box-shadow:var(--shadow);border:0;margin-bottom:8px}
+  .arow .acts{margin-left:0;width:100%}
+  .arow .btn{flex:1;min-height:44px}
+  .toast{bottom:16px;left:16px;right:16px;transform:none;max-width:none}
+}
+@media (max-width:720px){.avs{gap:0}.row .avs .ab{height:40px}.row .avs .ab:first-child{margin-left:0}.name a{white-space:normal}.row .st{max-width:none}.row>:nth-child(4){min-width:0;white-space:nowrap}.row .avs .a{width:26px;height:26px}.row .avs .ab{min-width:40px}.row .avs .ab:first-child{margin-left:0}.row .avs .ab{margin-left:0}.key{margin-left:0}.kp{left:0;right:auto}.legrow{justify-content:flex-start}.strip .key{flex:1 0 100%}.mg{grid-template-columns:96px 1fr}}
+</style>
+</head>
+<body>
+<aside class="side" aria-label="Main">
+  <a class="brand" href="#/" aria-label="Conductor"><svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="7" fill="#4b2e2b"/><path d="M6 17c0-6 3-9 6-9s6 3 6 9" fill="none" stroke="#fff8f0" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="8" r="1.8" fill="#fff8f0"/></svg><span>Conductor</span></a>
+  <a class="nav on" id="nav-home" href="#/" aria-current="page" title="Home"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M3 8l6-5 6 5v7H3z"/><path d="M7.5 15v-4h3v4"/></svg><span class="l">Home</span></a>
+  <a class="nav proj" id="nav-proj" href="#/projects" title="Projects"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="12" height="12" rx="2"/><path d="M3 8h12M8 8v7"/></svg><span class="l">Projects</span></a>
+  <button class="nav" id="nav-wait" data-act="tray" aria-label="Waiting on you" title="Waiting on you"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="9" r="6"/><path d="M9 5.5V9l2.5 1.5"/></svg><span class="l">Waiting on you</span><b id="badge" aria-hidden="true">4</b></button>
+  <a class="nav" id="nav-sess" href="#/sessions" title="Sessions"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><rect x="2.5" y="3.5" width="13" height="9" rx="2"/><path d="M6 15.5h6"/></svg><span class="l">Sessions</span></a>
+  <div class="demo" role="group" aria-label="Demo controls">
+    <span class="dlab">Demo</span>
+    <button data-act="demo" title="Move one task (N)" aria-label="Move one task"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 2.5l8 4.5-8 4.5z"/></svg><span>Move one task</span><kbd>N</kbd></button>
+    <button class="rst" data-act="reset" title="Reset" aria-label="Reset demo"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.5 7a4.5 4.5 0 1 1-1.4-3.3M11.5 1.8v2.4H9.1"/></svg><span>Reset</span></button>
+  </div>
+  <div class="foot"><span class="a" aria-hidden="true">You</span><span class="tx" id="clock"></span></div>
+</aside>
+<main id="main">
+  <div class="top"><h1 id="h1">Home</h1><span class="sub" id="sum"></span><span class="keyslot" id="keyslot"></span></div>
+  <div id="strip"></div>
+  <div id="tbl"></div>
+  <div class="bh" id="bh"></div>
+  <div class="stage" id="stage"></div>
+  <div id="sess"></div>
+</main>
+<div class="scrim" id="scrim" data-act="close"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="dtitle" aria-hidden="true"></aside>
+<div id="tip" role="presentation"></div>
+<div class="sr" id="live" role="status" aria-live="polite"></div>
+<div class="menu" id="pmenu" role="menu" hidden>
+  <button role="menuitem" tabindex="-1" data-act="parchive"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="12" height="3.5" rx="1"/><path d="M3.2 6.5v6.3h9.6V6.5M6.5 9.2h3"/></svg>Archive project</button>
+  <button role="menuitem" tabindex="-1" data-act="premove"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M5.5 8h5"/></svg>Remove from Conductor</button>
+</div>
+<div class="toast" id="toast" hidden><span id="toastt"></span><button class="btn gh" data-act="toastundo">Undo</button></div>
+<dialog class="dlg" id="rmdlg" aria-labelledby="rmt" aria-describedby="rmd"><h2 id="rmt"></h2><p id="rmd">Its files stay where they are; this only takes it off your list.</p><div class="acts"><button class="btn gh" data-act="dlgcancel">Cancel</button><button class="btn pr" data-act="dlgremove">Remove</button></div></dialog>
+
+<script>
+/* Live by default: reads /api/state from Conductor's local server. ?demo loads the fake demo-data.js instead. */
+(function boot() {
+  var demo = new URLSearchParams(location.search).has("demo");
+  if (!demo) { window.addEventListener("DOMContentLoaded", function () { conductor(false); }); return; }
+  var s = document.createElement("script"); s.src = "demo-data.js";
+  s.onload = s.onerror = function () { conductor(true); };
+  document.head.appendChild(s);
+})();
+function conductor(DEMO) {
+  "use strict";
+  var LIVE = !DEMO;
+  var C = LIVE ? { now: { label: "" }, states: [], projects: [], waiting: [], events: [] } : window.CONDUCTOR;
+  var QS = new URLSearchParams(location.search), MODE = LIVE ? "loading" : (QS.get("state") || "");   /* demo: ?state=loading | error | empty */
+  var STALE = 30;                                                                /* minutes in progress with no commit before a task counts as quiet */
+  var RMQ = window.matchMedia("(prefers-reduced-motion: reduce)");
+  function RM() { return RMQ.matches; }
+  var $ = function (id) { return document.getElementById(id); };
+  var stripEl = $("strip"), tblEl = $("tbl"), bhEl = $("bh"), stageEl = $("stage"), sessEl = $("sess"), drawerEl = $("drawer"), scrimEl = $("scrim"), tipEl = $("tip"), liveEl = $("live");
+
+  /* ---------- helpers ---------- */
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function T(s) { return ' data-tip="' + esc(s) + '"'; }
+  function fmt(min) {
+    if (min == null) return "—";
+    if (min < 1) return "just now";
+    if (min < 60) return min + " min";
+    if (min < 360) { var h = Math.floor(min / 60), m = min % 60; return m ? h + " h " + m + " min" : h + " h"; }
+    if (min < 1440) return Math.round(min / 60) + " h";
+    var d = Math.round(min / 1440); return d + (d === 1 ? " day" : " days");
+  }
+  function ago(min) { return min == null ? "never" : min < 1 ? "just now" : fmt(min) + " ago"; }
+  function fmtS(min) { return min == null ? "" : min < 60 ? min + "m" : min < 1440 ? Math.round(min / 60) + "h" : Math.round(min / 1440) + "d"; }
+  function clock(minAgo) { var t = 14 * 60 + 32 - minAgo, h = Math.floor(t / 60), m = t % 60; return (h < 10 ? "0" : "") + h + ":" + (m < 10 ? "0" : "") + m; }
+  function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+  function say(s) { liveEl.textContent = ""; setTimeout(function () { liveEl.textContent = s; }, 30); }
+
+  /* ---------- icons: one stroke, one weight ---------- */
+  var P = {
+    chev: '<path d="M6 3l5 5-5 5"/>',
+    plus: '<path d="M7 1.5v11M1.5 7h11"/>',
+    close: '<path d="M4 4l8 8M12 4l-8 8"/>',
+    alert: '<path d="M8 2.5l6 10.5H2z"/><path d="M8 6.8v3M8 11.6v.1"/>',
+    board: '<rect x="2" y="2.5" width="3.6" height="11" rx="1.4"/><rect x="6.2" y="2.5" width="3.6" height="7" rx="1.4"/><rect x="10.4" y="2.5" width="3.6" height="9" rx="1.4"/>',
+    check: '<path d="M4.2 8.4l2.4 2.4 5-5.4"/>',
+    ready: '<path d="M8 12V4.5M4.8 7.5L8 4.3l3.2 3.2"/>',
+    fail: '<path d="M5.5 5.5l5 5M10.5 5.5l-5 5"/>',
+    start: '<path d="M6 4.2l5 3.8-5 3.8z"/>',
+    flag: '<path d="M4 14V2.5M4 3h7.5l-1.8 2.8L11.5 8.5H4"/>'
+  };
+  function ic(n, c) { return '<svg class="' + (c || "") + '" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + P[n] + '</svg>'; }
+  /* task state glyphs, same shapes as the column headers */
+  function sico(state) {
+    var g = '<svg viewBox="0 0 16 16" aria-hidden="true">';
+    if (state === "done") return g + '<circle cx="8" cy="8" r="6.25" fill="#2f9e6b"/><path d="M5.2 8.2l2 2 3.6-3.8" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    if (state === "progress") return g + '<circle cx="8" cy="8" r="6.25" fill="none" stroke="#a8683a" stroke-width="1.5"/><path d="M8 4.5a3.5 3.5 0 0 1 0 7z" fill="#a8683a"/></svg>';
+    if (state === "qa") return g + '<circle cx="8" cy="8" r="6.25" fill="none" stroke="#a8683a" stroke-width="1.5"/><path d="M5.2 8.2l2 2 3.6-3.8" fill="none" stroke="#a8683a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    if (state === "fail") return g + '<circle cx="8" cy="8" r="6.25" fill="none" stroke="#c23b30" stroke-width="1.5"/><path d="M5.8 5.8l4.4 4.4M10.2 5.8l-4.4 4.4" stroke="#c23b30" stroke-width="1.5" stroke-linecap="round"/></svg>';
+    if (state === "blocked") return g + '<circle cx="8" cy="8" r="6.25" fill="none" stroke="#76503a" stroke-width="1.5"/><path d="M5 8h6" stroke="#76503a" stroke-width="1.5" stroke-linecap="round"/></svg>';
+    return g + '<circle cx="8" cy="8" r="6.25" fill="none" stroke="#76503a" stroke-width="1.5" stroke-dasharray="2.4 2.4"/></svg>';
+  }
+  if (!C) {
+    tblEl.innerHTML = '<div class="state"><span class="ico bad">' + ic("alert") + '</span><div class="grow"><h2>Couldn\'t read the build data</h2><p>The data file did not load.</p></div><button class="btn pr" onclick="location.reload()">Retry</button></div>';
+    return;
+  }
+
+  /* ---------- live data: /api/state adapted to the shape the renderer below already draws ---------- */
+  var LSTATES = [
+    { id: "todo", label: "To do" }, { id: "assigned", label: "Assigned" }, { id: "progress", label: "In progress" },
+    { id: "qa", label: "Ready for QA" }, { id: "fail", label: "QA failed" }, { id: "blocked", label: "Blocked" }, { id: "done", label: "Done" }
+  ];
+  var SSTATES = ["working", "idle", "stopped", "quiet", "gone", "closed"], SORDER = ["working", "quiet", "idle", "stopped", "gone", "closed"], HB_QUIET = 30, POLL = 5000;
+  var BUSY = /^(assigned|progress|fail)$/;
+  function msAgo(ms) { return typeof ms === "number" && ms > 0 ? Math.max(0, Math.floor((NOWMS - ms) / 60000)) : null; }
+  var NOWMS = Date.now(), ERRS = [], lastGood = null, loaded = false;
+  function iso(s) { return s ? Date.parse(String(s).replace(/([+-]\d\d)(\d\d)$/, "$1:$2")) : NaN; }
+  function minsAgo(s) { var t = iso(s); return isNaN(t) ? null : Math.max(0, Math.floor((NOWMS - t) / 60000)); }
+  function hhmm(ms) { var d = new Date(ms); return (d.getHours() < 10 ? "0" : "") + d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "") + d.getMinutes(); }
+  function nowLabel(s) {
+    var m = /^(\d{4})-(\d\d)-(\d\d)T(\d\d):(\d\d)/.exec(s || ""); if (!m) return "";
+    var wd = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][new Date(Date.UTC(+m[1], m[2] - 1, +m[3])).getUTCDay()];
+    return wd + " " + (+m[3]) + " " + ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][m[2] - 1] + ", " + m[4] + ":" + m[5];
+  }
+  var KIND = { decision: "Decision", gate: "Gate", stuck: "Stuck" };
+  function adapt(api) {
+    NOWMS = iso(api.now) || Date.now();
+    var waiting = [];
+    var ps = (api.projects || []).map(function (st) {
+      var hb = minsAgo(st.heartbeat && st.heartbeat.at);
+      var raw = st.sessions || [];
+      var lanes = (st.lanes || []).map(function (l) { return { id: l.id, label: l.label || l.id }; });
+      var sessions = raw.map(function (s) {
+        var role = s.role === "orchestrator" || s.role === "qa" ? s.role : (s.lane || s.role || "");
+        var o = { name: s.name, role: role, lane: s.lane, state: SSTATES.indexOf(s.state) >= 0 && s.state !== "closed" ? s.state : "gone", seen: minsAgo(s.seen),
+          doing: s.doing || "", model: "", lastCommit: s.lastCommit || null, lastMessage: s.lastMessage || null, hbQuiet: null, raw: "" };
+        /* `live` (is a Claude Code process with this name running, and what it reports) beats what the board was last told */
+        var lv = s.live && typeof s.live === "object" ? s.live : null;
+        if (lv) {
+          if (!lv.alive) o.state = "closed";
+          else if (lv.status === "busy") o.state = "working";
+          else if (lv.status === "idle") o.state = s.lane && role !== "orchestrator" && (st.tasks || []).some(function (t) { return t.lane === s.lane && BUSY.test(t.state); }) ? "stopped" : "idle";
+          else { o.state = "idle"; o.raw = String(lv.status || "unknown"); }
+          var lm = lv.alive ? msAgo(lv.since) : null; if (lm != null && (o.seen == null || lm < o.seen)) o.seen = lm;
+        }
+        /* an orchestrator whose heartbeat is older than 30 min looks quiet, whatever it last said */
+        if (role === "orchestrator" && hb != null && hb > HB_QUIET && (lv ? o.state === "idle" : (o.state === "working" || o.state === "idle"))) { o.state = "quiet"; o.hbQuiet = hb; }
+        o.task = o.state === "closed" ? (o.doing || "Nothing recorded") : o.doing || { working: "Working", idle: "Waiting for the next task", stopped: "Stopped", quiet: "No recent activity", gone: "Session ended" }[o.state];
+        return o;
+      });
+      var p = { id: st.id, name: st.name || st.id, phase: st.phase || "", target: st.target || "", hbMin: hb, lanes: lanes, sessions: sessions, timeline: null, marks: [] };
+      p.tasks = (st.tasks || []).map(function (t) {
+        var x = { id: t.id, title: t.title || t.id, lane: t.lane || "", state: LABEL[t.state] ? t.state : "todo", waits: t.waits || [], commit: t.commit || "",
+          age: minsAgo(t.updatedAt) || 0, qa: t.qa || null, fails: t.fails || 0, note: t.note || "" };
+        /* last activity, as board.py counts it: the task's own update or anything its lane session did */
+        var ls = x.lane === "orchestrator" ? null : raw.filter(function (s) { return s.lane === x.lane; })[0], acts = [x.age];
+        if (ls) [ls.seen, (ls.lastCommit || {}).at, (ls.lastMessage || {}).at].forEach(function (a) { var m = minsAgo(a); if (m != null) acts.push(m); });
+        if (ls && ls.live && ls.live.alive && msAgo(ls.live.since) != null) acts.push(msAgo(ls.live.since));
+        x.act = Math.min.apply(null, acts);
+        return x;
+      });
+      p.stats = stats(p);
+      p.finished = p.stats.total > 0 && p.stats.done === p.stats.total;
+      p.archived = !!st.archived; p.archivedAt = st.archivedAt || null;
+      p.sessionCounts = { working: 0, idle: 0, stopped: 0, quiet: 0, gone: 0, closed: 0 };
+      sessions.forEach(function (s) { p.sessionCounts[s.state] += 1; });
+      var orch = sessions.filter(function (s) { return s.role === "orchestrator"; })[0];
+      (st.waiting || []).forEach(function (w) {
+        if (w.answer && !w.pending) return;                                       /* closed: recorded by the orchestrator */
+        waiting.push({ id: st.id + "/" + w.id, rid: w.id, project: st.id, kind: KIND[w.kind] || "Decision", rawKind: KIND[w.kind] ? w.kind : "decision",
+          age: minsAgo(w.askedAt), from: w.session || (orch && orch.name) || "", session: w.session || "", title: w.question || w.id,
+          options: w.options || [], recommendation: w.recommendation || "", why: w.why || "", blocks: w.blocks || [], answer: w.answer || null, pending: !!w.pending, notified: !!w.notified });
+      });
+      return p;
+    });
+    return { now: { iso: api.now, label: nowLabel(api.now) }, states: LSTATES, projects: ps, waiting: waiting, events: [] };
+  }
+
+  /* ---------- data + state ---------- */
+  var LABEL = {}; (LIVE ? LSTATES : C.states).forEach(function (s) { LABEL[s.id] = s.label; });
+  var projects = MODE === "empty" ? [] : C.projects;
+  var ORIG = {}; C.projects.forEach(function (p) { ORIG[p.id] = p.tasks.map(function (t) { return [t.state, t.age]; }); });
+  var S = { page: "home", pid: null, bad: null, filter: "all", drawer: null, opener: null, more: {}, sent: {}, pick: {}, demo: {}, rot: 0, landed: null, shown: {}, doneShown: {}, hlw: null, busy: {}, err: {},
+    sfold: {}, archOpen: false, perr: {}, menu: null };
+  /* live: every registered project as the server sent it, split into active and archived (with optimistic overrides in OV) */
+  var ALLP = [], ALLE = [], ARCH = [], ARCHE = [], OV = {};
+  function archOf(id, server) { var o = OV[id]; return o && o.act === "archive" ? true : o && o.act === "unarchive" ? false : !!server; }
+  function removed(id) { var o = OV[id]; return !!(o && o.act === "remove"); }
+  function archAt(p) { var o = OV[p.id]; return o && o.act === "archive" ? o.at : p.archivedAt; }
+  function split() {
+    projects = ALLP.filter(function (p) { return !removed(p.id) && !archOf(p.id, p.archived); });
+    ARCH = ALLP.filter(function (p) { return !removed(p.id) && archOf(p.id, p.archived); })
+      .sort(function (a, b) { return (iso(archAt(b)) || 0) - (iso(archAt(a)) || 0); });
+    ERRS = ALLE.filter(function (e) { return !e.id || (!removed(e.id) && !archOf(e.id, e.archived)); });
+    ARCHE = ALLE.filter(function (e) { return e.id && !removed(e.id) && archOf(e.id, e.archived); });
+    C.projects = projects;
+  }
+  function reconcile(t0) {
+    Object.keys(OV).forEach(function (id) {
+      var o = OV[id]; if (o.inflight) return;
+      var sp = ALLP.filter(function (p) { return p.id === id; })[0] || ALLE.filter(function (e) { return e.id === id; })[0];
+      var matched = o.act === "remove" ? !sp : !!sp && !!sp.archived === (o.act === "archive");
+      if (matched || t0 >= o.okAt) delete OV[id];                /* a read that began after the server said ok is the truth */
+    });
+  }
+  function isLanded(p, t) { return S.landed && (typeof S.landed === "string" ? S.landed === t.id : !!S.landed[p.id + "/" + t.id]); }
+  function isOpenW(w) { return !S.sent[w.id] && !w.answer; }
+  var PCOL = ["#3f6ea8", "#84508f", "#2f7f8c"];                                  /* project marker colours (decoration; the name always sits beside it) */
+  function pcol(id) { for (var i = 0; i < C.projects.length; i++) if (C.projects[i].id === id) return PCOL[i % PCOL.length]; return PCOL[0]; }
+  function pm(id) { return '<i class="pm" style="background:' + pcol(id) + '"></i>'; }
+  /* progress ramp: the colour comes from the range the percent falls in, never from the project */
+  var RAMP = ["0–24", "25–49", "50–74", "75–99", "100"], RAMPN = ["just started", "early", "around half", "nearly there", "done"];
+  function rng(pct) { return pct >= 100 ? 4 : pct >= 75 ? 3 : pct >= 50 ? 2 : pct >= 25 ? 1 : 0; }
+  function legend() {
+    var seg = [["g-d", "Done"], ["g-w", "Working"], ["g-q", "In QA"], ["g-f", "Failed QA"], ["", "Queued"]];
+    return '<details class="key"><summary title="Colour key" aria-label="Colour key">Colour key</summary><div class="kp"><div class="kh">Task segments</div><div class="kr">' + seg.map(function (x) { return '<span class="ki"><i class="bar-s ' + x[0] + '"></i>' + x[1] + '</span>'; }).join("") +
+      '</div><div class="kh">Percent done</div><div class="kr">' + RAMP.map(function (r, i) { return '<span class="ki r' + i + '"><i class="rs"></i>' + r + '%</span>'; }).join("") + '</div></div></details>';
+  }
+  function ring(pct, anim) {
+    var c = 2 * Math.PI * 9;
+    return '<svg class="ring" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="var(--seg)" stroke-width="3"/><circle class="rf' + (anim ? " a" : "") + '" cx="12" cy="12" r="9" fill="none" stroke="var(--rc)" stroke-width="3" stroke-linecap="round" stroke-dasharray="' + c.toFixed(2) + '" stroke-dashoffset="' + (c * (1 - pct / 100)).toFixed(2) + '" style="--c:' + c.toFixed(2) + '" transform="rotate(-90 12 12)"/></svg>';
+  }
+
+  function proj(id) { return projects.filter(function (p) { return p.id === id; })[0]; }
+  function task(p, id) { return p.tasks.filter(function (t) { return t.id === id; })[0]; }
+  function laneLabel(p, id) { if (LIVE && id === "orchestrator") return "Gate"; var l = p.lanes.filter(function (x) { return x.id === id; })[0]; return l ? l.label : id; }
+  function sessionByRole(p, role) { return p.sessions.filter(function (s) { return s.role === role; })[0]; }
+  function sessionByName(p, n) { return p.sessions.filter(function (s) { return s.name === n; })[0]; }
+  function roleName(p, s) { return s.role === "orchestrator" ? "Orchestrator" : s.role === "qa" ? "QA" : cap(laneLabel(p, s.role) || "Session"); }
+  function ini(p, s) { return s.role === "orchestrator" ? "O" : s.role === "qa" ? "Q" : (laneLabel(p, s.role) || s.name || "?").charAt(0).toUpperCase(); }
+  function unmet(p, t) { return t.waits.filter(function (w) { var x = task(p, w); return x && x.state !== "done"; }); }
+  function holds(p, id) { return p.tasks.filter(function (t) { return t.waits.indexOf(id) >= 0; }).map(function (t) { return t.id; }); }
+  function waitingOpen(pid) { return C.waiting.filter(function (w) { return isOpenW(w) && (!pid || w.project === pid) && !!proj(w.project); }); }
+  function heldBy(p, t) { return C.waiting.filter(function (w) { return isOpenW(w) && w.project === p.id && w.blocks.indexOf(t.id) >= 0; }); }
+  function quietMin(t) { return LIVE ? t.act : t.age; }
+  function stale(t) { return t.state === "progress" && quietMin(t) > STALE; }
+  function stats(p) {
+    var by = {}; Object.keys(LABEL).forEach(function (k) { by[k] = 0; });
+    p.tasks.forEach(function (t) { by[t.state] = (by[t.state] || 0) + 1; });
+    var total = p.tasks.length;
+    return { by: by, total: total, done: by.done, pct: total ? Math.round(by.done / total * 100) : 0 };
+  }
+  function failNote(p, t) {
+    if (LIVE) { var n = (t.qa && t.qa.issues) || 0; return n ? n + " issue" + (n > 1 ? "s" : "") + " found" : "Failed QA"; }
+    var m = (p.marks || []).filter(function (x) { return x[2] === "FAIL" && x[3].indexOf(t.id + " ") === 0; })[0];
+    return m ? m[3].replace(/^\S+ failed:?\s*/, "").replace(/^./, function (c) { return c.toUpperCase(); }) : "Failed QA";
+  }
+  if (!LIVE) {
+    projects.forEach(function (p) { var s = stats(p); console.assert(s.done === p.stats.done && s.total === p.stats.total && s.pct === p.stats.pct, p.id + ": own stats must match data.js"); });
+    console.assert(C.waiting.length === C.totals.waiting, "waiting count must match totals");
+  }
+  function orchName(p) { var o = sessionByRole(p, "orchestrator"); return o ? o.name : p.id + "-orchestrator"; }
+
+  /* ---------- keyed DOM patch: live polls update nodes in place, so nothing flashes or replays its entrance ---------- */
+  function keyOf(n) {
+    if (n.nodeType !== 1) return null;
+    var g = function (a) { return n.getAttribute(a) || ""; };
+    if (n.hasAttribute("data-wid")) return n.tagName + "|w|" + g("data-wid") + "|" + g("data-act") + "|" + g("data-o");
+    if (n.hasAttribute("data-id")) return n.tagName + "|t|" + g("data-p") + "|" + g("data-id") + "|" + g("data-act");
+    if (n.hasAttribute("data-s")) return n.tagName + "|s|" + g("data-p") + "|" + g("data-s");
+    if (n.hasAttribute("data-go")) return "r|" + g("data-go");
+    if (n.hasAttribute("data-f")) return "f|" + g("data-f");
+    if (n.hasAttribute("data-col")) return n.tagName + "|c|" + g("data-col") + "|" + g("data-act");
+    if (n.hasAttribute("data-err")) return "e|" + g("data-err");
+    if (n.hasAttribute("data-arch")) return "a|" + g("data-arch");
+    return null;
+  }
+  function sameNode(a, b) { return a.nodeType === b.nodeType && (a.nodeType !== 1 || a.tagName === b.tagName); }
+  function morphNode(a, b) {
+    if (a.nodeType !== 1) { if (a.nodeValue !== b.nodeValue) a.nodeValue = b.nodeValue; return; }
+    var i, at;
+    for (i = a.attributes.length - 1; i >= 0; i--) { at = a.attributes[i].name; if (!b.hasAttribute(at)) a.removeAttribute(at); }
+    for (i = 0; i < b.attributes.length; i++) { at = b.attributes[i]; if (a.getAttribute(at.name) !== at.value) a.setAttribute(at.name, at.value); }
+    if (a.tagName !== "INPUT" && a.tagName !== "TEXTAREA") morphKids(a, b);
+  }
+  function morphKids(from, to) {
+    var olds = Array.prototype.slice.call(from.childNodes), keyed = {}, loose = [], used = [], j = 0;
+    olds.forEach(function (n) { var k = keyOf(n); if (k) { if (!keyed[k]) keyed[k] = n; } else loose.push(n); });
+    var out = Array.prototype.slice.call(to.childNodes).map(function (nn) {
+      var k = keyOf(nn), m = null;
+      if (k) { if (keyed[k]) { m = keyed[k]; delete keyed[k]; } }
+      else { while (j < loose.length && !m) { if (sameNode(loose[j], nn)) m = loose[j]; j++; } }
+      if (m) { morphNode(m, nn); used.push(m); return m; }
+      return nn;
+    });
+    olds.forEach(function (n) { if (used.indexOf(n) < 0) from.removeChild(n); });
+    out.forEach(function (n, i) { var at = from.childNodes[i]; if (at !== n) from.insertBefore(n, at || null); });
+  }
+  /* Demo keeps the mockup's plain innerHTML; the live app patches whatever is already on screen. */
+  function put(el, html, fresh) {
+    if (!LIVE || fresh || !el.firstChild) { el.innerHTML = html; return; }
+    var tp = document.createElement("template"); tp.innerHTML = html; morphKids(el, tp.content);
+  }
+
+  function statusOf(p) {
+    var w = waitingOpen(p.id).length, s = p.stats;
+    if (w) return { c: "s-wait", t: w + " waiting on you" };
+    if (s.pct === 100) return { c: "s-done", t: LIVE && p.finished ? "Finished" : "Done" };
+    if (s.pct >= 80) return { c: "s-near", t: "Nearly done" };
+    return { c: "s-ok", t: "On track" };
+  }
+  /* ---------- drawn pieces ---------- */
+  function dot(s) { return '<i class="dot ' + s.state + '"></i>'; }
+  function av(p, s, cls, plain) { return '<span class="' + (cls || "av") + (s.state === "gone" ? " st-gone" : s.state === "closed" ? " st-closed" : "") + '" aria-hidden="true">' + ini(p, s) + (plain ? "" : dot(s)) + '</span>'; }
+  function rawNote(s) { return s.raw ? "Claude Code says: " + s.raw : ""; }
+  function sessLabel(p, s) { return roleName(p, s) + ", " + s.name + ", " + s.state + (s.raw ? " (" + s.raw + ")" : "") + ", seen " + ago(s.seen) + ". " + (s.state === "closed" ? "Was doing: " : "") + s.task; }
+  function sessTip(p, s) {
+    if (s.state === "closed") return roleName(p, s) + " · Closed" + (s.seen != null ? " · seen " + fmtS(s.seen) + " ago" : "");
+    return roleName(p, s) + " · " + cap(s.state) + (s.raw ? " (" + s.raw + ")" : "") + (s.state === "quiet" || s.state === "gone" ? " " + fmtS(s.hbQuiet != null ? s.hbQuiet : s.seen) : "") + "\n" + s.task;
+  }
+  function avButton(p, s) {
+    return '<button class="ab" data-act="session" data-p="' + p.id + '" data-s="' + esc(s.name) + '" aria-label="' + esc(sessLabel(p, s)) + '"' + T(sessTip(p, s)) + '>' + av(p, s, "a") + '</button>';
+  }
+
+  /* The Sessions cell fits 5 circles. More than that: the 4 most active, then a "+N" that opens the project on the Sessions page. */
+  var AV_FIT = 5, AV_RANK = { working: 0, quiet: 1, gone: 2, idle: 3, stopped: 4, closed: 5 };
+  function avRow(p) {
+    var ss = p.sessions;
+    if (ss.length <= AV_FIT) return ss.map(function (x) { return avButton(p, x); }).join("");
+    var ranked = ss.map(function (x, i) { return { s: x, i: i }; }).sort(function (a, b) {
+      var ra = AV_RANK[a.s.state] != null ? AV_RANK[a.s.state] : 3, rb = AV_RANK[b.s.state] != null ? AV_RANK[b.s.state] : 3;
+      return ra - rb || a.i - b.i;
+    });
+    var shown = ranked.slice(0, AV_FIT - 1).sort(function (a, b) { return a.i - b.i; }), rest = ranked.slice(AV_FIT - 1);
+    var tip = rest.map(function (r) { return roleName(p, r.s) + " · " + cap(r.s.state); }).join("\n");
+    return shown.map(function (r) { return avButton(p, r.s); }).join("") +
+      '<button class="ab" data-act="allsess" data-p="' + esc(p.id) + '" aria-label="' + esc(rest.length + " more sessions. Show all " + ss.length + " on the Sessions page") + '"' + T(tip + "\nShow all on the Sessions page") + '><span class="a amore" aria-hidden="true">+' + rest.length + '</span></button>';
+  }
+
+  var RANK = { done: 0, qa: 1, progress: 2, fail: 3, blocked: 4, assigned: 5, todo: 5 };
+  function bar(p, anim, d) {
+    var s = p.stats, prevDone = S.doneShown[p.id];
+    var ts = p.tasks.slice().sort(function (a, b) { return RANK[a.state] - RANK[b.state] || a.age - b.age; });
+    var segs = ts.map(function (t, i) {
+      var c = t.state === "done" ? "g-d" : t.state === "progress" ? "g-w" : t.state === "qa" ? "g-q" : t.state === "fail" ? "g-f" : "";
+      var isNew = !anim && prevDone != null && t.state === "done" && i >= prevDone;
+      return '<i class="' + c + (isNew ? " new" : "") + (anim ? " segin" : "") + '" style="--k:' + i + ';--d:' + d + '"' + T(t.id + " " + t.title + " · " + LABEL[t.state]) + '></i>';
+    }).join("");
+    return '<div class="bar r' + rng(s.pct) + '" role="img" aria-label="' + esc(s.done + " of " + s.total + " tasks done, " + s.by.qa + " in QA, " + s.by.progress + " working, " + s.by.fail + " failed QA") + '">' + segs + '</div>';
+  }
+
+  /* ---------- project table (Projects page) ---------- */
+  function row(p, i, anim) {
+    var s = p.stats, st = statusOf(p), sel = !S.bad && p.id === S.pid, d = i * 60;
+    var from = anim ? 0 : (S.shown[p.id] != null ? S.shown[p.id] : s.pct);
+    return '<div class="row' + (sel ? " sel" : "") + (anim ? " rise" : "") + '" role="row" data-go="' + p.id + '" style="--d:' + d + '">' +
+      '<div class="name" role="cell"><svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + P.chev + '</svg><div><span class="nml"><a href="#/p/' + p.id + '"' + (sel ? ' aria-current="true"' : "") + '>' + esc(p.name) + '</a>' + (LIVE && p.finished ? '<span class="fdone"' + T("Finished: all " + s.total + " tasks done") + '>' + sico("done") + '<span class="sr">Finished</span></span>' : "") + '</span>' +
+      (LIVE && S.perr[p.id] ? '<small class="err" role="alert">' + esc(S.perr[p.id]) + '</small>' : '<small>' + s.done + ' of ' + s.total + ' tasks' + (p.phase ? ' &middot; ' + esc(p.phase) : "") + '</small>') + '</div></div>' +
+      '<div role="cell">' + bar(p, anim, d) + '</div>' +
+      '<div class="pct r' + rng(s.pct) + '" role="cell"' + T(RAMP[rng(s.pct)] + "%: " + RAMPN[rng(s.pct)]) + '><span class="cnt" data-from="' + from + '" data-to="' + s.pct + '" data-p="' + p.id + '">' + s.pct + '</span>%</div>' +
+      '<div role="cell"><span class="st ' + st.c + '">' + st.t + '</span></div>' +
+      '<div class="avs" role="cell" aria-label="Sessions">' + avRow(p) + '</div>' + (LIVE ? menuCell(p.id, p.name) : "") + '</div>';
+  }
+  var DOTS = '<svg viewBox="0 0 18 18" fill="currentColor" aria-hidden="true"><circle cx="4" cy="9" r="1.6"/><circle cx="9" cy="9" r="1.6"/><circle cx="14" cy="9" r="1.6"/></svg>';
+  function menuCell(id, name) {
+    return '<div class="mc" role="cell"><button class="mbtn" data-act="pmenu" data-p="' + esc(id) + '" aria-haspopup="menu" aria-expanded="' + (S.menu === id) + '" aria-controls="pmenu" aria-label="' + esc("More for " + name) + '"' + T("More") + '>' + DOTS + '</button></div>';
+  }
+  function head() {
+    return '<div class="row th" role="row"><span role="columnheader">Project</span><span role="columnheader">Progress by task</span><span role="columnheader">Done</span><span role="columnheader">Status</span><span role="columnheader">Sessions</span>' + (LIVE ? '<span role="columnheader"><span class="sr">Actions</span></span>' : "") + '</div>';
+  }
+
+  /* a registered project whose board could not be read: one quiet row, no bar */
+  function errText(e) {
+    var m = String(e.error || "");
+    if (/missing/.test(m)) return "Board file missing. It may have moved.";
+    if (/registry/.test(m)) return "Conductor's project list could not be read.";
+    return "Board file could not be read.";
+  }
+  function errRow(e) {
+    var err = e.id && S.perr[e.id];
+    return '<div class="row er" role="row" data-err="' + esc(e.id || e.state || "") + '"><div class="name" role="cell">' + ic("alert") + '<div><span>' + esc(e.name || e.id || "Project list") + '</span>' + (err ? '<small class="err" role="alert">' + esc(err) + '</small>' : '<small>' + esc(errText(e)) + '</small>') + '</div></div><div role="cell"></div><div role="cell"></div><div role="cell"></div><div role="cell"></div>' + (LIVE ? (e.id ? menuCell(e.id, e.name || e.id) : '<div role="cell"></div>') : "") + '</div>';
+  }
+  function errRows() { return LIVE && ERRS.length ? ERRS.map(errRow).join("") : ""; }
+  /* archived projects: a quiet disclosure under the table */
+  function shortDate(s) {
+    var t = iso(s); if (isNaN(t)) return "";
+    var d = new Date(t), m = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][d.getMonth()];
+    return d.getDate() + " " + m + (d.getFullYear() !== new Date(NOWMS).getFullYear() ? " " + d.getFullYear() : "");
+  }
+  function aActs(id, name) {
+    return '<div class="acts"><button class="btn gh" data-act="punarch" data-p="' + esc(id) + '" aria-label="' + esc("Unarchive " + name) + '">Unarchive</button><button class="btn gh" data-act="premove" data-p="' + esc(id) + '" aria-label="' + esc("Remove " + name + " from Conductor") + '">Remove</button></div>';
+  }
+  function aRow(p) {
+    var err = S.perr[p.id], dt = shortDate(archAt(p));
+    return '<div class="arow" role="listitem" data-arch="' + esc(p.id) + '"><div class="an"><b>' + esc(p.name) + '</b>' + (err ? '<small class="err" role="alert">' + esc(err) + '</small>' : '<small>' + (dt ? "Archived " + dt : "Archived") + '</small>') + '</div>' +
+      '<span class="apc r' + rng(p.stats.pct) + '"' + T(p.stats.done + " of " + p.stats.total + " tasks done") + '>' + p.stats.pct + '%</span>' + aActs(p.id, p.name) + '</div>';
+  }
+  function aErrRow(e) {
+    var err = S.perr[e.id], nm = e.name || e.id;
+    return '<div class="arow" role="listitem" data-arch="' + esc(e.id) + '"><div class="an"><b>' + esc(nm) + '</b><small' + (err ? ' class="err" role="alert"' : "") + '>' + esc(err || errText(e)) + '</small></div>' + aActs(e.id, nm) + '</div>';
+  }
+  function archSection() {
+    var n = LIVE ? ARCH.length + ARCHE.length : 0; if (!n) return "";
+    return '<div class="arch"><button class="afold" data-act="archfold" aria-expanded="' + S.archOpen + '" aria-controls="alist"><svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + P.chev + '</svg>Archived (' + n + ')</button>' +
+      '<div class="alist" id="alist" role="list" aria-label="Archived projects"' + (S.archOpen ? "" : " hidden") + '>' + ARCH.map(aRow).join("") + ARCHE.map(aErrRow).join("") + '</div></div>';
+  }
+  function stateCard(kind) {
+    if (LIVE && kind === "error") return '<div class="state" role="alert"><span class="ico bad">' + ic("alert") + '</span><div class="grow"><h2>Conductor\'s server stopped</h2><p>Reopen the app.' + (lastGood ? ' Last good read ' + hhmm(lastGood) + '.' : "") + '</p></div><button class="btn pr" data-act="retry">Retry</button></div>';
+    if (LIVE) return '<div class="state"><span class="ico">' + ic("board") + '</span><div class="grow"><h2>' + (ARCH.length + ARCHE.length ? "No active projects" : "No projects yet") + '</h2><p>Projects appear here when you run the orchestrate skill at the end of a planning session.</p></div><button class="btn pr" data-act="retry">Check again</button></div>' +
+      (ERRS.length ? '<div class="tbl wm" role="table" aria-label="Projects that could not be read">' + errRows() + '</div>' : "") + archSection();
+    if (kind === "error") return '<div class="state" role="alert"><span class="ico bad">' + ic("alert") + '</span><div class="grow"><h2>Couldn\'t read the status files</h2><p>Conductor could not open STATUS.md. Last good read ' + clock(23) + '.</p></div><button class="btn pr" data-act="retry">Retry</button></div>';
+    return '<div class="state"><span class="ico">' + ic("board") + '</span><div class="grow"><h2>No projects yet</h2><p>Conductor lists every folder on this Mac that has a STATUS.md. Add one and it shows up here.</p></div><button class="btn pr" data-act="retry">Check again</button></div>';
+  }
+
+  function renderTable(anim) {
+    if (MODE === "loading") {
+      tblEl.innerHTML = '<div class="tbl" aria-busy="true">' + head() + [1, 2, 3].map(function () {
+        return '<div class="row skr"><span class="sk" style="height:32px;width:70%"></span><span class="sk" style="height:10px"></span><span class="sk" style="height:16px"></span><span class="sk" style="height:24px;width:100px"></span><span class="sk" style="height:28px;width:110px;border-radius:14px"></span></div>';
+      }).join("") + '</div>';
+      return;
+    }
+    if (MODE === "error" || MODE === "empty" || !projects.length) { put(tblEl, stateCard(MODE === "error" ? "error" : "empty")); return; }
+    put(tblEl, '<div class="tbl' + (LIVE ? " wm" : "") + '" role="table" aria-label="Projects">' + head() + projects.map(function (p, i) { return row(p, i, anim); }).join("") + errRows() + '</div>' + archSection(), anim);
+    countUps(tblEl);
+    projects.forEach(function (p) { S.shown[p.id] = p.stats.pct; S.doneShown[p.id] = p.stats.done; });
+    if (S.menu && !menuBtn(S.menu)) { S.menu = null; pMenu.hidden = true; }
+  }
+
+  function countUps(scope) {
+    Array.prototype.forEach.call(scope.querySelectorAll(".cnt"), function (el) {
+      var a = +el.getAttribute("data-from"), b = +el.getAttribute("data-to");
+      if (a === b || RM()) return;
+      var delay = 0, rowEl = el.closest(".row"); if (rowEl && rowEl.classList.contains("rise")) delay = parseFloat(rowEl.style.getPropertyValue("--d")) || 0;
+      var t0 = performance.now() + delay, dur = 540; el.textContent = a;
+      (function step(now) { var k = Math.max(0, Math.min(1, (now - t0) / dur)), e = 1 - Math.pow(1 - k, 3); el.textContent = Math.round(a + (b - a) * e); if (k < 1) requestAnimationFrame(step); })(t0);
+    });
+  }
+
+  function updateSelection() {
+    Array.prototype.forEach.call(tblEl.querySelectorAll(".row[data-go]"), function (r) {
+      var on = !S.bad && r.getAttribute("data-go") === S.pid, a = r.querySelector(".name a");
+      r.classList.toggle("sel", on);
+      if (on) a.setAttribute("aria-current", "true"); else a.removeAttribute("aria-current");
+    });
+  }
+
+  /* ---------- Home: compact progress strip ---------- */
+  function renderStrip(anim) {
+    var done = 0, tot = 0; projects.forEach(function (p) { done += p.stats.done; tot += p.stats.total; });
+    var all = tot ? Math.round(done / tot * 100) : 0, fromAll = anim ? 0 : (S.shown.__all != null ? S.shown.__all : all);
+    var h = '<div class="strip" role="group" aria-label="Progress"><span class="pchip all r' + rng(all) + (anim ? " rise" : "") + '" style="--d:0"' + T("Share of all tasks done, " + RAMP[rng(all)] + "%: " + RAMPN[rng(all)]) + '>' + ring(all, anim) +
+      '<span>All projects</span><span class="pc"><span class="cnt" data-from="' + fromAll + '" data-to="' + all + '">' + all + '</span>%</span><small>' + done + ' of ' + tot + ' tasks</small></span>';
+    projects.forEach(function (p, i) {
+      var pct = p.stats.pct, from = anim ? 0 : (S.shown[p.id] != null ? S.shown[p.id] : pct);
+      h += '<a class="pchip r' + rng(pct) + (anim ? " rise" : "") + '" style="--d:' + ((i + 1) * 60) + '" href="#/p/' + p.id + '" aria-label="' + esc(p.name + ", " + pct + " percent done. Open project") + '"' + T(p.stats.done + " of " + p.stats.total + " tasks · " + RAMP[rng(pct)] + "%: " + RAMPN[rng(pct)]) + '>' + pm(p.id) + '<span class="pn">' + esc(p.name) + '</span>' + ring(pct, anim) +
+        '<span class="pc"><span class="cnt" data-from="' + from + '" data-to="' + pct + '">' + pct + '</span>%</span></a>';
+    });
+    put(stripEl, h + '</div>', anim);
+    countUps(stripEl);
+    S.shown.__all = all; projects.forEach(function (p) { S.shown[p.id] = p.stats.pct; S.doneShown[p.id] = p.stats.done; });
+  }
+
+  /* ---------- headers ---------- */
+  function sessionTotals() {
+    var n = { working: 0, quiet: 0, idle: 0, stopped: 0, gone: 0, closed: 0 }, tot = 0;
+    projects.forEach(function (p) { p.sessions.forEach(function (s) { n[s.state] += 1; tot += 1; }); });
+    return { n: n, tot: tot };
+  }
+  function renderSummary() {
+    var el = $("sum"), ks = $("keyslot");
+    if (ks) { var want = (!MODE && projects.length > 0 && (S.page === "home" || S.page === "projects")); if (want && !ks.firstChild) ks.innerHTML = legend(); else if (!want) ks.innerHTML = ""; }
+    if (MODE === "loading") { el.textContent = "Reading status files"; return; }
+    if (MODE === "error") { el.textContent = ""; return; }
+    if (!projects.length) { el.textContent = ""; return; }
+    if (S.page === "sessions") {
+      var t = sessionTotals();
+      el.textContent = t.tot + " sessions in " + projects.length + (projects.length === 1 ? " project: " : " projects: ") + SORDER.filter(function (k) { return t.n[k]; }).map(function (k) { return t.n[k] + " " + k; }).join(", ");
+      return;
+    }
+    var done = 0, tot = 0, fin = 0; projects.forEach(function (p) { done += p.stats.done; tot += p.stats.total; if (LIVE && p.finished) fin += 1; });
+    el.textContent = (projects.length - fin) + " in flight, " + (fin ? fin + " finished, " : "") + done + " of " + tot + " tasks done";
+  }
+
+  function renderBadge(bump) {
+    var n = MODE ? 0 : waitingOpen().length, b = $("badge");
+    b.textContent = n; b.hidden = !n;
+    $("nav-wait").setAttribute("aria-label", n ? "Waiting on you, " + n : "Waiting on you");
+    if (bump && n && !RM()) { b.classList.remove("bump"); void b.offsetWidth; b.classList.add("bump"); }
+  }
+
+  function renderHead(anim) {
+    var p = proj(S.pid);
+    if (MODE || !p || S.bad) { bhEl.innerHTML = ""; return; }
+    var w = waitingOpen(p.id).length, f = p.stats.by.fail, bits = [];
+    if (w) bits.push('<button class="lnk" data-act="tray" data-p="' + p.id + '">' + w + ' waiting on you</button>');
+    if (f) bits.push(f + ' QA failure' + (f > 1 ? "s" : ""));
+    put(bhEl, '<h2' + (anim ? ' class="fadein"' : "") + '>' + esc(p.name) + ' board</h2><span class="sub' + (anim ? " fadein" : "") + '">' + (bits.length ? bits.join(" &middot; ") : "Nothing waiting, nothing failed") + '</span>', anim);
+  }
+  function homeList() { return S.filter !== "all" && proj(S.filter) ? [proj(S.filter)] : projects; }
+  function renderHomeHead(anim) {
+    var Lp = homeList(), n = 0, w = 0, f = 0, bits = [];
+    Lp.forEach(function (p) { n += p.tasks.length; w += waitingOpen(p.id).length; f += p.stats.by.fail; });
+    if (w) bits.push('<button class="lnk" data-act="tray"' + (Lp.length === 1 ? ' data-p="' + Lp[0].id + '"' : "") + '>' + w + ' waiting on you</button>');
+    if (f) bits.push(f + ' QA failure' + (f > 1 ? "s" : ""));
+    function chip(id, label, mark) { return '<button class="fchip" data-act="filter" data-f="' + id + '" aria-pressed="' + (S.filter === id) + '">' + (mark || "") + esc(label) + '</button>'; }
+    put(bhEl, '<h2' + (anim ? ' class="fadein"' : "") + '>' + (Lp.length === 1 ? esc(Lp[0].name) + ' tasks' : "All tasks") + '</h2><span class="sub' + (anim ? " fadein" : "") + '">' + n + ' tasks' + (Lp.length > 1 ? " across " + Lp.length + " projects" : "") + (bits.length ? " &middot; " + bits.join(" &middot; ") : "") + '</span>' +
+      '<div class="fl" role="group" aria-label="Filter by project">' + chip("all", "All") + projects.map(function (p) { return chip(p.id, p.name, pm(p.id)); }).join("") + '</div>', anim);
+  }
+
+  /* ---------- board (one project, or every project on Home) ---------- */
+
+  var COLS = [
+    { id: "queued", label: "Queued", test: function (t) { return t.state === "todo" || (LIVE ? t.state === "assigned" : t.state === "blocked"); }, icon: '<svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.25" fill="none" stroke="#76503a" stroke-width="1.5" stroke-dasharray="2.4 2.4"/></svg>', limit: 3, empty: "Nothing queued" },
+    { id: "working", label: "Working", test: function (t) { return t.state === "progress" || (LIVE && t.state === "blocked"); }, icon: sico("progress").replace("<svg ", '<svg width="14" height="14" '), empty: "Nobody is mid-task" },
+    { id: "qa", label: "In QA", test: function (t) { return t.state === "qa" || t.state === "fail"; }, icon: sico("qa").replace("<svg ", '<svg width="14" height="14" '), empty: "Nothing in QA" },
+    { id: "done", label: "Done", test: function (t) { return t.state === "done"; }, icon: sico("done").replace("<svg ", '<svg width="14" height="14" '), limit: 3, empty: "Nothing done yet" }
+  ];
+  function ownerOf(p, t) {
+    if (t.state === "qa") return sessionByRole(p, "qa");
+    if (t.state === "todo" && !(LIVE && t.lane === "orchestrator")) return null;
+    return sessionByRole(p, t.lane);
+  }
+  function cardInfo(p, t) {
+    var held = heldBy(p, t), um = unmet(p, t), o = { cls: "", chip: "", cc: "", note: "" };
+    if (t.state === "done") { o.cls = "dn"; return o; }
+    if (t.state === "fail") { o.cls = "fail"; o.chip = "QA failed"; o.cc = "c-b"; o.note = failNote(p, t) + ". Back with " + laneLabel(p, t.lane) + "."; return o; }
+    if (held.length) { o.cls = "wait"; o.chip = "Waiting on you"; o.cc = "c-w"; o.note = "Needs you: " + held[0].title; return o; }
+    if (t.state === "qa") return o;
+    if (t.state === "progress") { if (stale(t)) { o.chip = "Quiet " + fmtS(quietMin(t)); o.cc = "c-w"; } else { /* column says Working */ } return o; }
+    if (t.state === "blocked") { o.chip = um.length ? "Blocked by " + um[0] : LIVE ? "Blocked" : "Blocked by —"; o.cc = "c-w"; if (LIVE && t.note) o.note = t.note; return o; }
+    if (LIVE && t.state === "assigned") { o.chip = "Assigned"; return o; }
+    if (LIVE && t.lane === "orchestrator" && !um.length) { o.chip = "Gate"; return o; }
+    o.chip = um.length ? "Waits on " + um[0] + (um.length > 1 ? " +" + (um.length - 1) : "") : "Ready"; return o;
+  }
+
+  function card(p, t, tag) {
+    var i = cardInfo(p, t), o = ownerOf(p, t), isSel = S.drawer && S.drawer.k === "task" && S.drawer.id === t.id && S.drawer.p === p.id;
+    var avh = o ? '<span class="av' + (o.state === "gone" ? " st-gone" : o.state === "closed" ? " st-closed" : "") + '" aria-hidden="true"' + T(sessTip(p, o)) + '>' + ini(p, o) + (t.state === "done" ? "" : dot(o)) + '</span>' : '<span class="av none" aria-hidden="true"' + T("Not assigned yet") + '></span>';
+    var lab = (tag ? p.name + ": " : "") + t.id + " " + t.title + ", " + LABEL[t.state] + (i.cls === "wait" ? ", waiting on you" : "") + (stale(t) ? ", quiet " + fmt(quietMin(t)) : "");
+    return '<article class="card ' + i.cls + (isSel ? " sel" : "") + (isLanded(p, t) ? " landed" : "") + '" role="button" tabindex="0" data-act="task" data-p="' + p.id + '" data-id="' + t.id + '" aria-label="' + esc(lab) + '">' +
+      (tag ? '<span class="ptag">' + pm(p.id) + '<span>' + esc(p.name) + '</span></span>' : "") +
+      '<h3>' + esc(t.title) + '</h3>' + (i.note ? '<p>' + esc(i.note) + '</p>' : "") +
+      '<div class="meta"><span class="id">' + t.id + '</span>' + (i.chip ? '<span class="chip ' + i.cc + '">' + i.chip + '</span>' : "") + avh + '</div></article>';
+  }
+
+  function skeletonBoard() {
+    return '<div class="board" aria-busy="true">' + [3, 3, 2, 3].map(function (n) {
+      return '<div class="col"><div class="ch"><span class="sk" style="height:20px;width:90px"></span></div><div class="cl">' + new Array(n + 1).join('<div class="card skc"><span class="sk" style="height:16px;width:80%"></span><span class="sk" style="height:12px;width:50%"></span></div>') + '</div></div>';
+    }).join("") + '</div>';
+  }
+
+  function ready(p, t) { return t.state === "todo" && !unmet(p, t).length; }
+  function qrank(x) { return x.t.state === "assigned" ? 2 : ready(x.p, x.t) ? 1 : 0; }
+  function boardHtml(plist, key, anim, tag) {
+    return '<div class="board">' + COLS.map(function (c, ci) {
+      var list = [];
+      plist.forEach(function (p) { p.tasks.forEach(function (t) { if (c.test(t)) list.push({ p: p, t: t }); }); });
+      if (c.id === "done") list.sort(function (a, b) { return a.t.age - b.t.age; });
+      if (c.id === "queued") list.sort(function (a, b) { return qrank(b) - qrank(a); });
+      var open = S.more[key + c.id], lim = c.limit && !open ? c.limit : list.length, rest = list.length - lim;
+      var body = list.length ? list.slice(0, lim).map(function (x, j) {
+        var h = card(x.p, x.t, tag);
+        return anim ? h.replace('class="card ', 'class="card rise ').replace('data-act="task"', 'style="--d:' + (100 + ci * 40 + Math.min(j, 4) * 30) + '" data-act="task"') : h;
+      }).join("") : '<div class="note">' + c.empty + '</div>';
+      if (c.limit && list.length > c.limit) body += '<button class="more" data-act="more" data-key="' + key + '" data-col="' + c.id + '" aria-expanded="' + !!open + '">' + (open ? "Show fewer" : "+" + rest + " more " + c.label.toLowerCase()) + '</button>';
+      return '<section class="col' + (anim ? " rise" : "") + '" style="--d:' + (80 + ci * 40) + '" data-col="' + c.id + '" aria-label="' + c.label + '"><div class="ch">' + c.icon + c.label + '<span class="n">' + list.length + '</span></div><div class="cl">' + body + '</div></section>';
+    }).join("") + '</div>';
+  }
+  function colScroll() { var o = {}; Array.prototype.forEach.call(stageEl.querySelectorAll(".col"), function (c) { o[c.getAttribute("data-col")] = c.querySelector(".cl").scrollTop; }); return o; }
+  function stageHtml(anim) {
+    if (S.page === "home") return boardHtml(homeList(), "home:" + S.filter, anim, true);
+    if (S.bad) {
+      var first = projects[0];
+      return '<div class="state" style="width:100%;align-self:flex-start"><span class="ico bad">' + ic("alert") + '</span><div class="grow"><h2>No project called ' + esc(S.bad) + '</h2><p>It may have been moved or renamed.</p></div><a class="btn pr" href="#/p/' + first.id + '">Back to ' + esc(first.name) + '</a></div>';
+    }
+    var p = proj(S.pid); return p ? boardHtml([p], "p:" + p.id, anim, false) : "";
+  }
+  function renderStage(anim, before) {
+    var sc = !anim ? colScroll() : null, bsx = !anim && stageEl.querySelector(".board") ? stageEl.querySelector(".board").scrollLeft : 0;
+    if (MODE === "loading") { stageEl.innerHTML = skeletonBoard(); return; }
+    if (MODE) { stageEl.innerHTML = ""; return; }
+    put(stageEl, stageHtml(anim), anim);
+    if (sc) Array.prototype.forEach.call(stageEl.querySelectorAll(".col"), function (c) { c.querySelector(".cl").scrollTop = sc[c.getAttribute("data-col")] || 0; });
+    var b = stageEl.querySelector(".board"); if (b && bsx) b.scrollLeft = bsx;
+    if (before && !RM()) glide(before);
+  }
+
+  function ckey(e) { return e.getAttribute("data-p") + "/" + e.getAttribute("data-id"); }
+  function rects() { var o = {}; Array.prototype.forEach.call(stageEl.querySelectorAll(".card[data-id]"), function (e) { o[ckey(e)] = e.getBoundingClientRect(); }); return o; }
+  function glide(before) {
+    Array.prototype.forEach.call(stageEl.querySelectorAll(".card[data-id]"), function (c) {
+      var o = before[ckey(c)]; if (!o) return;
+      var n = c.getBoundingClientRect(), dx = o.left - n.left, dy = o.top - n.top;
+      if (Math.abs(dx) + Math.abs(dy) < 3) return;
+      c.style.position = "relative"; c.style.zIndex = 5;
+      var a = c.animate([{ transform: "translate(" + dx + "px," + dy + "px)" }, { transform: "none" }], { duration: 380, easing: "cubic-bezier(.2,.8,.2,1)" });
+      a.onfinish = function () { c.style.zIndex = ""; c.style.position = ""; };
+    });
+  }
+  /* ---------- drawer ---------- */
+  function dlRow(k, v, cls) { return '<dt>' + k + '</dt><dd' + (cls ? ' class="' + cls + '"' : "") + '>' + v + '</dd>'; }
+  function pill(p, id) {
+    var t = task(p, id); if (!t) return '<span class="dash">' + id + '</span>';
+    return '<button class="tp" data-act="task" data-p="' + p.id + '" data-id="' + id + '" title="' + esc(t.title + ", " + LABEL[t.state]) + '">' + sico(t.state) + '<span class="id">' + id + '</span><span class="tn">' + esc(t.title) + '</span></button>';
+  }
+  function pillList(p, ids) { return ids.length ? ids.map(function (id) { return pill(p, id); }).join("") : '<span class="dash">None</span>'; }
+  function qaBlock(p, t) {
+    var q = sessionByRole(p, "qa");
+    if (LIVE && t.lane === "orchestrator") return t.state === "done" ? '<div class="qa ok"><b>Gate opened</b>' + (t.note ? esc(t.note) : "Done.") + '</div>'
+      : '<div class="qa"><b>Gate</b>Only you open this. Type go in the ' + esc(p.id) + '-orchestrator tab when it asks.</div>';
+    if (LIVE && t.state === "qa") return '<div class="qa pg"><b>In QA</b>' + (q && q.state === "working" && new RegExp("\\b" + t.id + "\\b").test(q.task) ? esc(q.name) + ' is on it.' : "Ready for QA " + ago(t.age) + ". Waiting for the QA session.") + '</div>';
+    if (LIVE && t.state === "done") { var qs = (t.qa && t.qa.sha) || t.commit; return '<div class="qa ok"><b>Passed QA</b>' + (qs ? 'Passed on <span class="mono">' + esc(qs) + '</span>' + (t.qa && t.qa.at ? ', ' + ago(minsAgo(t.qa.at)) : "") + '.' : "Done.") + '</div>'; }
+    if (LIVE && (t.state === "assigned" || t.state === "blocked")) return '<div class="qa"><b>Not in QA yet</b>' + (t.state === "assigned" ? "Sent to " + esc(laneLabel(p, t.lane)) + ". Goes to QA when it marks it ready." : "Blocked. Goes to QA once it is unblocked and marked ready.") + '</div>';
+    if (t.state === "fail") return '<div class="qa bad"><b>QA failed</b>' + esc(failNote(p, t)) + '. Failed ' + ago(t.age) + (t.commit ? ' on <span class="mono">' + t.commit + '</span>' : "") + '. Sent back to ' + esc(laneLabel(p, t.lane)) + '.</div>';
+    if (t.state === "qa") return '<div class="qa pg"><b>In QA</b>' + (q && q.task.indexOf(t.id + " ") === 0 ? esc(q.name) + ' is on it: ' + esc(q.task.replace(/^\S+\s/, "").replace(/^./, function (c) { return c.toLowerCase(); })) + "." : "Ready for QA " + ago(t.age) + ". Waiting for the QA session.") + '</div>';
+    if (t.state === "done") return '<div class="qa ok"><b>Passed QA</b>' + (t.commit ? 'Merged as <span class="mono">' + t.commit + '</span>.' : "Done.") + '</div>';
+    return '<div class="qa"><b>Not in QA yet</b>' + (t.state === "progress" ? "Goes to QA when " + esc(laneLabel(p, t.lane)) + " marks it ready." : "Starts once what it waits on is done.") + '</div>';
+  }
+  function taskDrawer(p, t) {
+    var ses = sessionByRole(p, t.lane), hb = heldBy(p, t), info = cardInfo(p, t);
+    var h = '<div class="dh"><div class="grow"><span class="id mono">' + t.id + '</span>' + (info.cc === "c-w" ? '<span class="chip c-w">' + info.chip + '</span>' : "") + '</div><button class="x" data-act="close" aria-label="Close">' + ic("close") + '</button></div>' +
+      '<div class="db"><h2 id="dtitle">' + esc(t.title) + '</h2><dl class="dl">' +
+      dlRow("Status", '<span style="display:flex;align-items:center;gap:8px;font-weight:600"><span style="width:16px;height:16px">' + sico(t.state) + '</span>' + LABEL[t.state] + (t.state === "progress" || t.state === "done" ? "" : "") + '</span>') +
+      dlRow("Lane", ses ? '<button class="tp" data-act="session" data-p="' + p.id + '" data-s="' + esc(ses.name) + '">' + av(p, ses, "av") + '<span>' + esc(laneLabel(p, t.lane)) + '</span><span class="tn">' + esc(ses.name) + '</span></button>' : esc(laneLabel(p, t.lane))) +
+      dlRow("Changed", LIVE ? ago(t.age) : t.age > 0 ? ago(t.age) : "Not started") +
+      dlRow("Commit", t.commit ? '<span class="mono">' + esc(t.commit) + '</span>' : '<span class="dash">None yet</span>') +
+      (LIVE && t.note ? dlRow("Note", '<span>' + esc(t.note) + '</span>') : "") +
+      '</dl>' +
+      '<h4>Waits on</h4><div class="acts" style="flex-direction:column;align-items:stretch;gap:4px">' + pillList(p, t.waits) + '</div>' +
+      '<h4>Holds up</h4><div class="acts" style="flex-direction:column;align-items:stretch;gap:4px">' + pillList(p, holds(p, t.id)) + '</div>' +
+      '<h4>QA</h4>' + qaBlock(p, t);
+    if (hb.length) h += '<h4>Waiting on you</h4>' + hb.map(function (w) { return '<button class="tp big" data-act="trayopen" data-w="' + w.id + '">' + ic("flag", "") .replace("<svg ", '<svg style="width:16px;height:16px;flex:none" ') + '<span class="tn" style="color:var(--ink);font-weight:600">' + esc(w.title) + '</span></button>'; }).join("");
+    return h + '</div>';
+  }
+
+  /* ---------- Sessions page ---------- */
+  function seeded(str) { var h = 2166136261; for (var i = 0; i < str.length; i++) h = Math.imul(h ^ str.charCodeAt(i), 16777619); return function () { h = Math.imul(h ^ (h >>> 15), 2246822507); h ^= h >>> 13; h = Math.imul(h, 3266489909); h ^= h >>> 16; return (h >>> 0) % 1000 / 1000; }; }
+  /* What a session is on right now. Task = the id named in its status line (not for orchestrators, whose line is a note).
+     data.js has no start time, so "on it for" is real for QA (time since the task went to QA) and made up deterministically for builders (never less than the task's last change). */
+  function sessInfo(p, s) {
+    if (LIVE) {
+      /* live: the task named in its status line, else the task its lane (or QA) holds right now; "on it for" = time since that task last changed */
+      if (s.role === "orchestrator" || s.state === "gone" || s.state === "stopped" || s.state === "closed") return { t: null, on: null };
+      var lt = null; (s.task.match(/\b[A-Za-z]+\d+\b/g) || []).some(function (id) { lt = task(p, id) || null; return !!lt; });
+      if (lt && lt.state === "done") lt = null;
+      if (!lt && (s.state === "working" || s.state === "quiet")) lt = p.tasks.filter(function (x) { return s.role === "qa" ? x.state === "qa" : x.lane === s.role && /^(progress|assigned|fail|blocked)$/.test(x.state); })[0] || null;
+      return { t: lt, on: lt && lt.state !== "assigned" ? lt.age : null };
+    }
+    var m = /\b([A-C]\d+)\b/.exec(s.task), t = (s.role !== "orchestrator" && s.state !== "gone" && m) ? task(p, m[1]) : null, on = null;
+    if (t && t.state === "qa") on = t.age;
+    else if (t && t.state === "progress") on = t.age + 6 + Math.floor(seeded(s.name + t.id)() * 70);
+    return { t: t, on: on };
+  }
+  /* Last commit or message: newest event from this session in data.js; otherwise the newest commit on its lane (made-up fallback). */
+  function lastAct(p, s) {
+    if (LIVE) {
+      var c = s.lastCommit, g = s.lastMessage, cm = c ? minsAgo(c.at) : null, gm = g ? minsAgo(g.at) : null;
+      if (c && (gm == null || (cm != null && cm <= gm))) return { kind: "commit", text: c.msg || "Commit", sha: c.sha, min: cm };
+      if (g) return { kind: "message", text: g.text || "", sha: "", min: gm };
+      return null;
+    }
+    var ev = C.events.filter(function (e) { return e.who === s.name; })[0];
+    if (ev) return { kind: (ev.kind === "commit" || ev.kind === "ready") && ev.sha ? "commit" : "message", text: ev.text, sha: ev.sha, min: ev.min };
+    var lt = p.tasks.filter(function (x) { return x.lane === s.role && x.commit && (x.state === "done" || x.state === "qa"); }).sort(function (a, b) { return a.age - b.age; })[0];
+    return lt ? { kind: "commit", text: lt.id + " " + lt.title, sha: lt.commit, min: lt.age } : null;
+  }
+  function laLine(la) {
+    return la ? (la.sha ? '<span class="mono">' + esc(la.sha) + '</span> ' : "") + '<b>' + esc(la.text) + '</b> &middot; ' + ago(la.min) : "No commits or messages yet";
+  }
+  var NOWL = { working: "Doing now", quiet: "Quiet on", idle: "Idle", stopped: "Stopped", gone: "Ended", closed: "Was doing" };
+  function schip(s) { return '<span class="sch sch-' + s.state + '"' + (s.raw ? T(rawNote(s)) : "") + '><i></i>' + cap(s.state) + '</span>'; }
+  function mrow(l, v) { return '<span class="ml">' + l + '</span><span class="mv">' + v + '</span>'; }
+  function sCard(p, s, d, anim) {
+    var inf = sessInfo(p, s), la = lastAct(p, s), sel = S.drawer && S.drawer.k === "session" && S.drawer.p === p.id && S.drawer.id === s.name;
+    var now = '<span class="nl">' + NOWL[s.state] + '</span>' + (inf.t
+      ? '<span class="nt"><b>' + esc(inf.t.title) + '</b><span class="id mono">' + inf.t.id + '</span></span>'
+      : '<span class="nt"><b>' + esc(s.task) + '</b></span>');
+    return '<button class="scard sc-' + s.state + (sel ? " sel" : "") + (anim ? " rise" : "") + '" style="--d:' + d + '" data-act="session" data-p="' + p.id + '" data-s="' + esc(s.name) + '" aria-label="' + esc(sessLabel(p, s) + " Open details") + '">' +
+      '<span class="sc-h">' + av(p, s, "a md") + '<span class="tx"><b>' + esc(s.name) + '</b><span>' + esc(roleName(p, s)) + (s.model ? ' &middot; ' + esc(s.model) : "") + '</span></span>' + (s.state === "working" ? "" : schip(s)) + '</span>' +
+      '<span class="now">' + now + '</span>' +
+      '<span class="mg">' + (inf.on != null ? mrow("On it for", fmt(inf.on)) : "") + mrow("Last activity", ago(s.seen)) + (LIVE && s.role === "orchestrator" ? mrow("Heartbeat", p.hbMin == null ? "None yet" : ago(p.hbMin)) : "") + mrow("Last " + (la ? la.kind : "commit"), laLine(la)) + '</span></button>';
+  }
+  function sxId(id) { return "sx-" + String(id).replace(/[^\w-]/g, "_"); }
+  function renderSessions(anim) {
+    if (MODE === "loading") {
+      sessEl.innerHTML = '<div class="sessions" aria-busy="true"><div class="sgrid">' + [1, 2, 3, 4].map(function () { return '<div class="scard"><span class="sk" style="height:32px;width:70%"></span><span class="sk" style="height:56px"></span><span class="sk" style="height:12px;width:50%"></span></div>'; }).join("") + '</div></div>';
+      return;
+    }
+    put(sessEl, '<div class="sessions">' + projects.map(function (p, pi) {
+      var c = p.sessionCounts, kinds = SORDER.filter(function (k) { return c[k]; }), bits = kinds.map(function (k) { return c[k] + " " + k; }).join(", ");
+      var cards = p.sessions.map(function (s, si) { return sCard(p, s, Math.min(pi * 60 + si * 30, 300), anim); }).join("");
+      if (LIVE && p.finished) {
+        /* a finished project folds to one line until asked */
+        var n = p.sessions.length, open = !!S.sfold[p.id], gid = "sg-" + p.id.replace(/\W/g, "_");
+        var line = kinds.length === 1 ? n + (n === 1 ? " session " : " sessions ") + kinds[0] : n + (n === 1 ? " session: " : " sessions: ") + bits;
+        return '<section id="' + sxId(p.id) + '" class="sp' + (open ? "" : " fold") + '" aria-label=""' + esc(p.name) + ' sessions"><h2 class="sh' + (anim ? " fadein" : "") + '"><button class="sfold" data-act="sfold" data-p="' + esc(p.id) + '" aria-expanded="' + open + '" aria-controls="' + gid + '"><svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + P.chev + '</svg>' + pm(p.id) + esc(p.name) +
+          '<span class="sub">&middot; finished' + (n ? ' &middot; ' + line : "") + '</span></button></h2><div class="sgrid" id="' + gid + '"' + (open ? "" : " hidden") + '>' + cards + '</div></section>';
+      }
+      return '<section id="' + sxId(p.id) + '" class="sp" aria-label=""' + esc(p.name) + ' sessions"><h2 class="sh' + (anim ? " fadein" : "") + '">' + pm(p.id) + esc(p.name) + '<span class="sub">' + p.sessions.length + (LIVE && p.sessions.length === 1 ? ' session: ' : ' sessions: ') + bits + '</span></h2><div class="sgrid">' + cards + '</div></section>';
+    }).join("") + '</div>', anim);
+  }
+  function sessionDrawer(p, s) {
+    var inf = sessInfo(p, s), la = lastAct(p, s), note = "";
+    if (s.state === "quiet") note = s.hbQuiet != null ? '<div class="qa warn"><b>Gone quiet</b>No heartbeat for ' + fmt(s.hbQuiet) + '. Check the ' + esc(p.id) + '-orchestrator tab: its loop may have stopped.</div>'
+      : '<div class="qa warn"><b>Gone quiet</b>No activity for ' + fmt(s.seen) + '. Worth a look at its terminal.</div>';
+    if (s.state === "gone") note = '<div class="qa bad"><b>Session ended</b>' + (s.seen == null ? "Never seen" : "Last seen " + ago(s.seen)) + '. Restart it from its terminal.</div>';
+    if (s.state === "closed") note = '<div class="qa"><b>Closed</b>No Claude Code session with this name is running.</div>';
+    var st = s.state === "working" ? "Working" : s.state === "idle" ? (s.raw ? "Idle (" + esc(s.raw) + ")" : "Idle, no task assigned") : s.state === "quiet" ? "Quiet" : s.state === "stopped" ? "Stopped" : s.state === "closed" ? "Closed" : "Gone";
+    return '<div class="dh"><div class="grow"><span class="chip">' + esc(p.name) + '</span></div><button class="x" data-act="close" aria-label="Close">' + ic("close") + '</button></div>' +
+      '<div class="db"><div class="sline">' + av(p, s, "a lg") + '<div class="t"><b id="dtitle">' + esc(s.name) + '</b>' + roleName(p, s) + ' &middot; ' + st + '</div></div>' +
+      '<dl class="dl">' + dlRow(s.state === "closed" ? "Was doing" : "Doing", esc(s.task)) + (inf.t ? dlRow("Task", pill(p, inf.t.id), "col1") : "") + (inf.on != null ? dlRow("On it for", fmt(inf.on)) : "") + dlRow("Last activity", ago(s.seen)) + dlRow("Last " + (la ? la.kind : "commit"), la ? '<span>' + (la.sha ? '<span class="mono">' + esc(la.sha) + '</span> ' : "") + esc(la.text) + ' <span class="dash">&middot; ' + ago(la.min) + '</span></span>' : '<span class="dash">None yet</span>') + (LIVE && s.role === "orchestrator" ? dlRow("Heartbeat", p.hbMin == null ? "None yet" : ago(p.hbMin)) : "") + (s.model ? dlRow("Model", esc(s.model)) : "") + '</dl>' + note + '</div>';
+  }
+
+  function trayDrawer() {
+    var list = C.waiting.filter(function (w) { return !!proj(w.project); }), open = waitingOpen().length;
+    return '<div class="dh"><div class="grow"></div><button class="x" data-act="close" aria-label="Close">' + ic("close") + '</button></div>' +
+      '<div class="db"><h2 id="dtitle">Waiting on you</h2>' + (list.length ? list.map(LIVE ? wBlockLive : wBlock).join("") : "") +
+      (open === 0 ? '<div class="state" style="margin-top:0"><span class="ico">' + ic("check") + '</span><div class="grow"><h2>Nothing waits on you</h2><p>The sessions carry on without you.</p></div></div>' : "") + '</div>';
+  }
+  function optKey(o) { var m = /^([A-Z])\s{2}(.*)$/.exec(o); return m ? { k: m[1], t: m[2] } : { k: "", t: o }; }
+  function recIndex(w) {
+    var rk = (/^([A-Z])\./.exec(w.recommendation) || [])[1];
+    for (var i = 0; i < w.options.length; i++) { var o = optKey(w.options[i]); if ((rk && o.k === rk) || w.recommendation.indexOf(o.t) === 0) return i; }
+    if (LIVE) { var r = w.recommendation.toLowerCase().trim(); for (var j = 0; r && j < w.options.length; j++) { var t = w.options[j].toLowerCase().trim(); if (t && (r.indexOf(t) === 0 || t.indexOf(r) === 0)) return j; } }
+    return -1;
+  }
+  function wBlock(w) {
+    var p = proj(w.project), sent = S.sent[w.id], ri = recIndex(w), pi = ri >= 0 ? ri : 0, po = optKey(w.options[pi]), open = S.pick[w.id];
+    var h = '<div class="w' + (sent ? " dn" : "") + (S.hlw === w.id ? " hl" : "") + '" data-wid="' + w.id + '"><div class="w-top"><span class="chip">' + esc(w.kind) + '</span><span>' + esc(p.name) + '</span><span class="age">' + fmt(w.age) + '</span></div><h3>' + esc(w.title) + '</h3>';
+    if (sent) return h + '<div class="ans">' + ic("check") + '<span>Answered: ' + esc(optKey(sent).t) + '</span><button class="btn gh" data-act="undo" data-w="' + w.id + '">Undo</button></div></div>';
+    h += '<p class="det">' + esc(w.detail) + '</p>';
+    if (w.blocks.length) h += '<div class="hold"><span class="hd">Holds up</span>' + w.blocks.map(function (id) { return task(p, id) ? pill(p, id) : ""; }).join("") + '</div>';
+    h += '<div class="rec"><b>Orchestrator suggests</b>' + esc(w.recommendation) + '</div>';
+    h += '<div class="acts"><button class="btn pr" data-act="send" data-w="' + w.id + '" data-o="' + esc(w.options[pi]) + '">' + (po.k ? "Go with " + po.k : esc(po.t)) + '</button><button class="btn gh" data-act="others" data-w="' + w.id + '" aria-expanded="' + !!open + '">' + (open ? "Hide options" : "Other options") + '</button></div>';
+    if (open) h += '<div class="opts">' + w.options.map(function (o, i) { if (i === pi) return ""; var k = optKey(o); return '<button class="opt" data-act="send" data-w="' + w.id + '" data-o="' + esc(o) + '">' + (k.k ? '<b>' + k.k + '</b>' : "") + esc(k.t) + '</button>'; }).join("") + '</div>';
+    return h + '</div>';
+  }
+  /* live tray item: decisions answer through /api/answer; gates and stuck sessions only say where to go */
+  function wBlockLive(w) {
+    var p = proj(w.project), sent = w.answer || S.sent[w.id], busy = !!S.busy[w.id], err = S.err[w.id], dis = busy ? " disabled" : "";
+    var h = '<div class="w' + (sent ? " dn" : "") + (S.hlw === w.id ? " hl" : "") + '" data-wid="' + esc(w.id) + '"' + (sent ? ' tabindex="-1"' : "") + '><div class="w-top"><span class="chip">' + esc(w.kind) + '</span><span>' + esc(p.name) + '</span><span class="age">' + fmt(w.age) + '</span></div><h3>' + esc(w.title) + '</h3>';
+    if (sent) return h + '<div class="ans">' + ic("check") + '<span>Answered: ' + esc(sent) + '</span></div><p class="det">' + (w.notified ? esc(orchName(p)) + ' has it.' : 'Sent to ' + esc(orchName(p)) + '.') + '</p></div>';
+    if (w.blocks.length) h += '<div class="hold"><span class="hd">Holds up</span>' + w.blocks.map(function (id) { return task(p, id) ? pill(p, id) : ""; }).join("") + '</div>';
+    if (w.recommendation || w.why) h += '<div class="rec">' + (w.recommendation ? '<b>Orchestrator suggests</b>' + esc(w.recommendation) : "") + (w.why ? '<span class="why">' + (w.recommendation ? "" : "<b>Why</b>") + esc(w.why) + '</span>' : "") + '</div>';
+    if (w.rawKind === "gate") return h + '<p class="det">Type go in the ' + esc(p.id) + '-orchestrator tab to open this.</p></div>';
+    if (w.rawKind === "stuck") {
+      var ss = w.session && sessionByName(p, w.session);
+      return h + '<div class="stuck">' + (ss ? '<button class="tp" data-act="session" data-p="' + p.id + '" data-s="' + esc(ss.name) + '">' + av(p, ss, "av") + '<span>' + esc(ss.name) + '</span></button>' : '<span class="mono">' + esc(w.session || "A session") + '</span>') + '<span>Check its tab.</span></div></div>';
+    }
+    var ri = w.options.length ? recIndex(w) : -1, fid = "fa-" + w.id.replace(/\W/g, "_");
+    if (w.options.length) h += '<div class="opts">' + w.options.map(function (o, i) { var k = optKey(o); return '<button class="opt' + (i === ri ? " rk" : "") + '" data-act="answer" data-w="' + esc(w.id) + '" data-o="' + esc(o) + '"' + dis + '>' + (k.k ? '<b>' + k.k + '</b>' : "") + esc(k.t) + '</button>'; }).join("") + '</div>';
+    h += '<form class="free" data-w="' + esc(w.id) + '"><label class="sr" for="' + fid + '">Your own answer</label><input class="fin" id="' + fid + '" type="text" maxlength="300" autocomplete="off" placeholder="' + (w.options.length ? "Or write a short answer" : "Write a short answer") + '"' + dis + '><button class="btn gh" type="submit"' + dis + '>Send</button></form>';
+    if (err) h += '<p class="err" role="alert">' + esc(err) + '</p>';
+    return h + '</div>';
+  }
+  function newDrawer() {
+    return '<div class="dh"><div class="grow"></div><button class="x" data-act="close" aria-label="Close">' + ic("close") + '</button></div><div class="db"><h2 id="dtitle">New project</h2>' +
+      '<p style="color:var(--mute);margin-bottom:16px">Conductor lists every folder on this Mac that has a STATUS.md. Point it at one and it joins the table.</p>' +
+      '<div class="qa warn"><b>Not wired</b>This is a mockup. Nothing is read or saved.</div></div>';
+  }
+  function drawerHtml() {
+    var d = S.drawer; if (!d) return "";
+    if (d.k === "task") { var p = proj(d.p), t = p && task(p, d.id); return t ? taskDrawer(p, t) : ""; }
+    if (d.k === "session") { var p2 = proj(d.p), s = p2 && sessionByName(p2, d.id); return s ? sessionDrawer(p2, s) : ""; }
+    if (d.k === "tray") return trayDrawer();
+    if (d.k === "new") return newDrawer();
+    return "";
+  }
+  function paintDrawer(focus) {
+    var html = drawerHtml(), body = drawerEl.querySelector(".db"), st = body ? body.scrollTop : 0;
+    if (!html) { closeDrawer(); return; }
+    put(drawerEl, html, focus);
+    drawerEl.setAttribute("aria-hidden", "false");
+    var nb = drawerEl.querySelector(".db"); if (nb && !focus) nb.scrollTop = st;
+    if (focus) { var x = drawerEl.querySelector(".x"); if (x) x.focus({ preventScroll: true }); }
+  }
+  function openDrawer(d, opener, keepOpener) {
+    var was = !!S.drawer;
+    if (!keepOpener || !was) S.opener = opener || null;
+    S.drawer = d;
+    paintDrawer(true);
+    drawerEl.classList.add("open"); scrimEl.classList.add("on");
+    markSelected();
+    if (!was) say("Opened " + (drawerEl.querySelector("#dtitle") || {}).textContent);
+  }
+  function closeDrawer() {
+    if (!S.drawer) return;
+    S.drawer = null; S.hlw = null;
+    drawerEl.classList.remove("open"); scrimEl.classList.remove("on"); drawerEl.setAttribute("aria-hidden", "true");
+    markSelected();
+    var o = S.opener; S.opener = null;
+    if (o) { var el = o.isConnected ? o : (o._sel && document.querySelector(o._sel)); if (el) el.focus({ preventScroll: true }); }
+  }
+  function markSelected() {
+    Array.prototype.forEach.call(document.querySelectorAll(".card.sel"), function (c) { c.classList.remove("sel"); });
+    if (S.drawer && S.drawer.k === "task") { var c = stageEl.querySelector('.card[data-p="' + S.drawer.p + '"][data-id="' + S.drawer.id + '"]'); if (c) c.classList.add("sel"); }
+    Array.prototype.forEach.call(document.querySelectorAll(".scard.sel"), function (c) { c.classList.remove("sel"); });
+    if (S.drawer && S.drawer.k === "session") { var sc = sessEl.querySelector('.scard[data-p="' + S.drawer.p + '"][data-s="' + S.drawer.id + '"]'); if (sc) sc.classList.add("sel"); }
+  }
+  function selOf(el) {
+    var s = '[data-act="' + el.getAttribute("data-act") + '"]';
+    ["p", "id", "s", "col"].forEach(function (k) { if (el.hasAttribute("data-" + k)) s += '[data-' + k + '="' + el.getAttribute("data-" + k) + '"]'; });
+    return s;
+  }
+
+  /* ---------- routing: #/ home, #/projects, #/p/<id>, #/sessions ---------- */
+  function route() {
+    var h = location.hash, m = /^#\/p\/([^\/?#]+)/.exec(h);
+    if (m) return { page: "p", id: decodeURIComponent(m[1]) };
+    if (/^#\/projects/.test(h)) return { page: "projects" };
+    if (/^#\/sessions/.test(h)) return { page: "sessions" };
+    return { page: "home" };
+  }
+  function hashFor(id) { return "#/p/" + id; }
+  var TITLES = { home: "Home", projects: "Projects", sessions: "Sessions" };
+  function setNav() {
+    [["nav-home", "home"], ["nav-proj", "projects"], ["nav-sess", "sessions"]].forEach(function (x) {
+      var el = $(x[0]), on = S.page === x[1];
+      el.classList.toggle("on", on);
+      if (on) el.setAttribute("aria-current", "page"); else el.removeAttribute("aria-current");
+    });
+  }
+  function render(anim, partial) {
+    var rt = route(), first = projects[0] && projects[0].id;
+    S.page = rt.page === "p" ? "projects" : rt.page; S.bad = null;
+    if (rt.page === "p") { if (proj(rt.id)) S.pid = rt.id; else if (projects.length) S.bad = rt.id; }
+    if (!S.pid || !proj(S.pid)) S.pid = first || null;
+    if (S.filter !== "all" && !proj(S.filter)) S.filter = "all";
+    var p = proj(S.pid);
+    $("h1").textContent = TITLES[S.page];
+    document.title = (S.page === "projects" && p && !S.bad && !MODE ? p.name : TITLES[S.page]) + " | Conductor";
+    hideTip(); setNav(); renderSummary(); renderBadge(false);
+    var fail = MODE === "error" || MODE === "empty" || !projects.length;
+    if (!partial) { stripEl.innerHTML = ""; tblEl.innerHTML = ""; }
+    sessEl.innerHTML = ""; bhEl.innerHTML = ""; stageEl.innerHTML = "";
+    stripEl.hidden = S.page !== "home" || fail; tblEl.hidden = !(S.page === "projects" || fail);
+    bhEl.hidden = S.page === "sessions" || fail || MODE === "loading"; stageEl.hidden = S.page === "sessions" || fail; sessEl.hidden = S.page !== "sessions" || fail;
+    if (fail) { renderTable(); return; }
+    if (S.page === "home") {
+      if (MODE === "loading") stripEl.innerHTML = '<div class="strip" aria-busy="true">' + [150, 190, 190, 190].map(function (w) { return '<span class="sk" style="height:40px;width:' + w + 'px;border-radius:20px"></span>'; }).join("") + '</div>';
+      else { renderStrip(anim); renderHomeHead(anim); }
+      renderStage(anim);
+    } else if (S.page === "projects") {
+      if (!partial) renderTable(anim);
+      updateSelection(); renderHead(anim); renderStage(anim);
+    } else renderSessions(anim);
+    markSelected();
+  }
+  window.addEventListener("hashchange", function () {
+    closeDrawerSoft();
+    var rt = route(), partial = S.page === "projects" && rt.page === "p" && !!proj(rt.id) && !S.bad && !MODE && !!tblEl.querySelector(".row[data-go]");
+    render(true, partial);
+  });
+  function closeDrawerSoft() { if (S.drawer) { S.opener = null; closeDrawer(); } }
+
+  /* ---------- demo: move one task so the glide can be seen ---------- */
+  function demoTargets() {
+    if (S.page === "projects") return [proj(S.pid)];
+    if (S.page === "home") {
+      if (S.filter !== "all" && proj(S.filter)) return [proj(S.filter)];
+      var r = S.rot % projects.length; return projects.slice(r).concat(projects.slice(0, r));
+    }
+    return [];
+  }
+  function demoStep() {
+    if (MODE) return;
+    if (S.page === "sessions") { say("Open Home or Projects to move a task"); return; }
+    var picked = null, to = "", pp = null, tg = demoTargets().filter(Boolean);
+    var plan = [["progress", "qa", -1], ["qa", "done", 1], ["fail", "progress", 0], ["todo", "progress", 0]];
+    tg.forEach(function (p) {
+      if (picked) return;
+      var n = S.demo[p.id] || 0;
+      for (var i = 0; i < 4 && !picked; i++) {
+        var st = plan[(n + i) % 4], pool = p.tasks.filter(function (t) { return t.state === st[0] && unmet(p, t).length === 0 && !stale(t); });
+        if (st[2] === 1) pool.sort(function (a, b) { return b.age - a.age; }); else pool.sort(function (a, b) { return a.age - b.age; });
+        if (pool.length) { picked = pool[0]; to = st[1]; pp = p; S.demo[p.id] = n + i + 1; }
+      }
+    });
+    S.rot += 1;
+    if (!picked) { say("Nothing can move right now"); return; }
+    var before = rects();
+    picked.state = to; picked.age = 0; pp.stats = stats(pp); S.landed = picked.id;
+    refresh(before);
+    var col = stageEl.querySelector('.card[data-id="' + picked.id + '"]'); if (col && col.scrollIntoView && stageEl.querySelector(".board").scrollWidth > stageEl.clientWidth + 4) col.scrollIntoView({ inline: "center", block: "nearest", behavior: RM() ? "auto" : "smooth" });
+    say(picked.title + " moved to " + LABEL[to]);
+  }
+  function demoReset() {
+    var tg = (S.page === "projects" ? [proj(S.pid)] : S.page === "home" ? homeList() : projects).filter(Boolean);
+    if (!tg.length) return;
+    var before = rects();
+    tg.forEach(function (p) {
+      p.tasks.forEach(function (t, i) { t.state = ORIG[p.id][i][0]; t.age = ORIG[p.id][i][1]; });
+      p.stats = stats(p); S.demo[p.id] = 0;
+      C.waiting.forEach(function (w) { if (w.project === p.id) { delete S.sent[w.id]; delete S.pick[w.id]; } });
+    });
+    S.landed = null;
+    refresh(before); if (S.drawer) paintDrawer(false);
+    say((tg.length === 1 ? tg[0].name : "All projects") + " reset");
+  }
+  /* re-render the data-driven parts without the entrance, keeping scroll */
+  function refresh(before, bump) {
+    renderSummary(); renderBadge(bump);
+    if (MODE || !projects.length) return;
+    if (S.page === "home") { renderStrip(false); renderHomeHead(false); renderStage(false, before); }
+    else if (S.page === "projects") { if (tblEl.querySelector(".row[data-go]")) renderTable(false); updateSelection(); renderHead(false); renderStage(false, before); }
+    else renderSessions(false);
+    markSelected();
+  }
+
+  /* ---------- events ---------- */
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-act]");
+    if (!b) {
+      var rowEl = e.target.closest("[data-go]");
+      if (rowEl && !e.target.closest("a,button")) { location.hash = hashFor(rowEl.getAttribute("data-go")); }
+      return;
+    }
+    if (b.disabled) return;
+    var act = b.getAttribute("data-act");
+    function opener() { var o = S.drawer ? S.opener : b; if (o && !o._sel) o._sel = selOf(b); return o; }
+    if (act === "close") { closeDrawer(); return; }
+    if (act === "pmenu") { if (S.menu === b.getAttribute("data-p")) closeMenu(true); else openMenu(b); return; }
+    if (act === "parchive") { var ma = S.menu; closeMenu(false); if (ma) archiveNow(ma); return; }
+    if (act === "premove") { var mr = S.menu || b.getAttribute("data-p"), back = S.menu ? menuBtn(S.menu) : b; closeMenu(false); if (mr) askRemove(mr, back); return; }
+    if (act === "punarch") { var pu = b.getAttribute("data-p"); projAction(pu, "unarchive"); say(nameOf(pu) + " is back on your list"); focusLater('[data-act="pmenu"][data-p="' + pu + '"]'); return; }
+    if (act === "archfold") { S.archOpen = !S.archOpen; b.setAttribute("aria-expanded", String(S.archOpen)); var al = $("alist"); if (al) al.hidden = !S.archOpen; return; }
+    if (act === "sfold") { var sp = b.getAttribute("data-p"); S.sfold[sp] = !S.sfold[sp]; renderSessions(false); var nf = sessEl.querySelector('[data-act="sfold"][data-p="' + sp + '"]'); if (nf) nf.focus({ preventScroll: true }); return; }
+    if (act === "toastundo") { var tu = toastPid; hideToast(false); if (tu) { projAction(tu, "unarchive"); say("Undone. " + nameOf(tu) + " is back"); focusLater('[data-act="pmenu"][data-p="' + tu + '"]'); } return; }
+    if (act === "dlgcancel") { rmDlg.close(); return; }
+    if (act === "dlgremove") { var rid = rmDlg.getAttribute("data-p"), rn = nameOf(rid); rmPid = null; rmDlg.close(); projAction(rid, "remove"); showToast("Removed " + rn + " from Conductor.", null); focusLater(".mbtn", "h1"); return; }
+    if (act === "retry") { if (LIVE) { b.disabled = true; setTimeout(function () { b.disabled = false; }, 800); poll(true); return; } MODE = ""; projects = C.projects; history.replaceState(null, "", location.pathname + location.hash); render(true); return; }
+    if (act === "demo") { demoStep(); return; }
+    if (act === "reset") { demoReset(); return; }
+    if (act === "task") { var id = b.getAttribute("data-id"); if (!id) return; var o = opener(); if (!o) { o = b; o._sel = selOf(b); } openDrawer({ k: "task", p: b.getAttribute("data-p"), id: id }, o, true); return; }
+    if (act === "session") { var o2 = opener(); if (!o2) { o2 = b; o2._sel = selOf(b); } openDrawer({ k: "session", p: b.getAttribute("data-p"), id: b.getAttribute("data-s") }, o2, true); return; }
+    if (act === "tray") { if (MODE) return; if (S.drawer && S.drawer.k === "tray") { closeDrawer(); return; } b._sel = selOf(b); var first = waitingOpen(b.getAttribute("data-p") || "")[0]; S.hlw = first ? first.id : null; openDrawer({ k: "tray" }, b); return; }
+    if (act === "trayopen") { S.hlw = b.getAttribute("data-w"); S.drawer = { k: "tray" }; paintDrawer(true); var wEl = drawerEl.querySelector('[data-wid="' + S.hlw + '"]'); if (wEl) wEl.scrollIntoView({ block: "nearest" }); markSelected(); return; }
+    if (act === "answer") { sendAnswer(b.getAttribute("data-w"), b.getAttribute("data-o")); return; }
+    if (act === "allsess") {
+      var sp2 = b.getAttribute("data-p");
+      if (S.sfold && proj(sp2) && proj(sp2).finished) S.sfold[sp2] = true;   /* open it if it was folded */
+      location.hash = "#/sessions";
+      setTimeout(function () { var sec = document.getElementById(sxId(sp2)); if (sec) { sec.scrollIntoView({ block: "start", behavior: RM() ? "auto" : "smooth" }); var h = sec.querySelector("h2"); if (h) { h.setAttribute("tabindex", "-1"); h.focus({ preventScroll: true }); } } }, 80);
+      return;
+    }
+    if (act === "filter") {
+      var f = b.getAttribute("data-f"); if (f === S.filter) return;
+      S.filter = f; renderHomeHead(false); renderStage(true);
+      var fb = bhEl.querySelector('[data-f="' + f + '"]'); if (fb) fb.focus({ preventScroll: true });
+      say(f === "all" ? "Showing all projects" : "Showing " + proj(f).name);
+      return;
+    }
+    if (act === "more") { var key = b.getAttribute("data-key") + b.getAttribute("data-col"); S.more[key] = !S.more[key]; renderStage(false); var nb = stageEl.querySelector('[data-act="more"][data-col="' + b.getAttribute("data-col") + '"]'); if (nb) nb.focus({ preventScroll: true }); return; }
+    if (act === "others") { var wid = b.getAttribute("data-w"); S.pick[wid] = !S.pick[wid]; paintDrawer(false); var nb2 = drawerEl.querySelector('[data-act="others"][data-w="' + wid + '"]'); if (nb2) nb2.focus({ preventScroll: true }); return; }
+    if (act === "send") {
+      var w = b.getAttribute("data-w"); S.sent[w] = b.getAttribute("data-o"); delete S.pick[w];
+      paintDrawer(false); refresh(null, false); renderBadge(true);
+      var nu = drawerEl.querySelector('[data-act="undo"][data-w="' + w + '"]'); if (nu) nu.focus({ preventScroll: true });
+      say("Answer sent. " + waitingOpen().length + " still waiting on you");
+      return;
+    }
+    if (act === "undo") { var w2 = b.getAttribute("data-w"); delete S.sent[w2]; paintDrawer(false); refresh(null, false); renderBadge(true); var ns = drawerEl.querySelector('[data-act="send"][data-w="' + w2 + '"]'); if (ns) ns.focus({ preventScroll: true }); return; }
+  });
+
+  document.addEventListener("click", function (e) { var ko = document.querySelector(".key[open]"); if (ko && !ko.contains(e.target)) ko.removeAttribute("open"); });
+
+  /* ---------- live: project More menu, archive / remove, toast, confirm dialog ---------- */
+  var pMenu = $("pmenu"), toastEl = $("toast"), toastTx = $("toastt"), rmDlg = $("rmdlg"), toastPid = null, toastT = null, toastHold = false, rmPid = null, rmBack = null;
+  function nameOf(id) { var p = ALLP.filter(function (x) { return x.id === id; })[0] || ALLE.filter(function (x) { return x.id === id; })[0]; return p ? p.name || p.id : id; }
+  function menuBtn(id) { return tblEl.querySelector('[data-act="pmenu"][data-p="' + id + '"]'); }
+  function focusLater(sel, fallback) {
+    setTimeout(function () { var el = document.querySelector(sel) || (fallback && document.querySelector(fallback)); if (el) { if (el.tagName === "H1") el.setAttribute("tabindex", "-1"); el.focus({ preventScroll: false }); } }, 0);
+  }
+  function placeMenu(b) {
+    var r = b.getBoundingClientRect(), w = pMenu.offsetWidth, h = pMenu.offsetHeight;
+    var x = Math.max(8, Math.min(innerWidth - w - 8, r.right - w)), y = r.bottom + 4;
+    if (y + h > innerHeight - 8) y = Math.max(8, r.top - h - 4);
+    pMenu.style.left = x + "px"; pMenu.style.top = y + "px";
+  }
+  function openMenu(b) {
+    closeMenu(false); hideTip();
+    var id = b.getAttribute("data-p"); S.menu = id;
+    pMenu.setAttribute("aria-label", "Actions for " + nameOf(id));
+    pMenu.hidden = false; placeMenu(b); b.setAttribute("aria-expanded", "true");
+    pMenu.querySelector('[role="menuitem"]').focus();
+  }
+  function closeMenu(refocus) {
+    if (!S.menu) return;
+    var b = menuBtn(S.menu); S.menu = null; pMenu.hidden = true;
+    if (b) { b.setAttribute("aria-expanded", "false"); if (refocus) b.focus(); }
+  }
+  document.addEventListener("click", function (e) { if (S.menu && !pMenu.contains(e.target) && !e.target.closest('[data-act="pmenu"]')) closeMenu(false); });
+  window.addEventListener("scroll", function () { closeMenu(false); }, true);
+  window.addEventListener("resize", function () { closeMenu(false); });
+  pMenu.addEventListener("keydown", function (e) {
+    var items = Array.prototype.slice.call(pMenu.querySelectorAll('[role="menuitem"]')), i = items.indexOf(document.activeElement);
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); items[(i + (e.key === "ArrowDown" ? 1 : items.length - 1)) % items.length].focus(); }
+    else if (e.key === "Home" || e.key === "End") { e.preventDefault(); items[e.key === "Home" ? 0 : items.length - 1].focus(); }
+    else if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); closeMenu(true); }
+    else if (e.key === "Tab") { closeMenu(true); e.preventDefault(); }
+  });
+
+  function showToast(text, undoPid) {
+    clearTimeout(toastT); toastPid = undoPid; toastTx.textContent = text;
+    toastEl.querySelector(".btn").hidden = !undoPid; toastEl.hidden = false;
+    armToast();
+  }
+  function armToast() { clearTimeout(toastT); toastT = setTimeout(function () { if (toastHold) return; hideToast(true); }, toastPid ? 8000 : 4000); }
+  function hideToast(moveFocus) {
+    clearTimeout(toastT); var had = toastEl.contains(document.activeElement);
+    toastEl.hidden = true; toastPid = null; toastHold = false;
+    if (had && moveFocus) focusLater(".mbtn", "h1");
+  }
+  toastEl.addEventListener("mouseenter", function () { toastHold = true; clearTimeout(toastT); });
+  toastEl.addEventListener("mouseleave", function () { toastHold = false; armToast(); });
+  toastEl.addEventListener("focusin", function () { toastHold = true; clearTimeout(toastT); });
+  toastEl.addEventListener("focusout", function (e) { if (!toastEl.contains(e.relatedTarget)) { toastHold = false; if (!toastEl.hidden) armToast(); } });
+
+  function archiveNow(id) {
+    var n = nameOf(id);
+    projAction(id, "archive");
+    showToast("Archived.", id); say(n + " archived. Undo is available");
+    var u = toastEl.querySelector(".btn"); if (u) u.focus({ preventScroll: true });
+  }
+  function askRemove(id, back) {
+    rmPid = id; rmBack = back || null;
+    rmDlg.setAttribute("data-p", id);
+    $("rmt").textContent = "Remove " + nameOf(id) + " from Conductor?";
+    rmDlg.showModal();
+    var c = rmDlg.querySelector('[data-act="dlgcancel"]'); if (c) c.focus();
+  }
+  rmDlg.addEventListener("close", function () {
+    if (rmPid && rmBack) { var el = rmBack.isConnected ? rmBack : document.querySelector('[data-act="premove"][data-p="' + rmPid + '"]') || menuBtn(rmPid); if (el) el.focus(); }
+    rmPid = null; rmBack = null;
+  });
+  rmDlg.addEventListener("click", function (e) {                 /* click on the backdrop cancels */
+    if (e.target !== rmDlg) return;
+    var r = rmDlg.getBoundingClientRect();
+    if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) rmDlg.close();
+  });
+
+  function plainProjErr(status, msg) {
+    msg = String(msg || "");
+    if (status === 403) return "Conductor only takes changes from its own window. Reopen the app and try again.";
+    if (status === 404) return "Conductor no longer lists this project.";
+    if (/couldn't update/i.test(msg)) return "Couldn't update the project list, so nothing changed. Try again.";
+    return msg ? "Nothing changed: " + msg + "." : "Nothing changed. Try again.";
+  }
+  function relist() { split(); render(false, false); if (S.drawer) paintDrawer(false); }
+  function projAction(id, action) {
+    var mine = { act: action, inflight: true, okAt: Infinity, at: new Date().toISOString() };
+    if (OV[id]) OV[id].dead = true;                              /* a newer action (Undo) replaces this one */
+    var rt = route(), hash0 = location.hash, wasSel = S.pid === id;
+    if (action !== "unarchive" && rt.page === "p" && rt.id === id) history.replaceState(null, "", location.pathname + location.search + "#/projects");
+    OV[id] = mine; delete S.perr[id]; relist();
+    function fail(msg) {
+      if (mine.dead) return;
+      delete OV[id]; S.perr[id] = msg; split();
+      if (wasSel && proj(id)) { S.pid = id; if (location.hash !== hash0 && route().page === "projects") history.replaceState(null, "", location.pathname + location.search + hash0); }
+      if (ARCH.concat(ARCHE).some(function (x) { return x.id === id; })) S.archOpen = true;
+      if (toastPid === id) hideToast(false);
+      render(false, false); if (S.drawer) paintDrawer(false); say(msg);
+    }
+    fetch("/api/project", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ project: id, action: action }) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { status: r.status, ok: r.ok && !!j.ok, j: j }; }); })
+      .then(function (res) {
+        if (!res.ok) { fail(plainProjErr(res.status, res.j && res.j.error)); return; }
+        if (OV[id] === mine) { mine.inflight = false; mine.okAt = Date.now(); }
+        poll();
+      })
+      .catch(function () { fail("Could not reach Conductor's server, so nothing changed. Try again."); });
+  }
+  document.addEventListener("submit", function (e) { var f = e.target.closest && e.target.closest("form.free"); if (!f) return; e.preventDefault(); var i = f.querySelector("input"); sendAnswer(f.getAttribute("data-w"), i ? i.value : ""); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") { var ko = document.querySelector(".key[open]"); if (ko) { ko.removeAttribute("open"); ko.querySelector("summary").focus(); return; } }
+    if (e.key === "Escape" && S.drawer) { e.preventDefault(); closeDrawer(); return; }
+    var t = e.target;
+    if ((e.key === "Enter" || e.key === " ") && t.classList && t.classList.contains("card")) { e.preventDefault(); t.click(); return; }
+    if ((e.key === "Enter" || e.key === " ") && t.classList && t.classList.contains("row") && t.getAttribute("data-go")) { e.preventDefault(); location.hash = hashFor(t.getAttribute("data-go")); return; }
+    if (!LIVE && (e.key === "n" || e.key === "N") && !e.metaKey && !e.ctrlKey && !e.altKey && !/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName || "")) demoStep();
+    if (e.key === "Tab" && S.drawer && drawerEl.classList.contains("open") && drawerEl.contains(t)) {                   /* keep Tab inside an open drawer */
+      var f = drawerEl.querySelectorAll("button:not([disabled]),a[href],input:not([disabled])"); if (!f.length) return;
+      var first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && t === first) { e.preventDefault(); last.focus(); } else if (!e.shiftKey && t === last) { e.preventDefault(); first.focus(); }
+    }
+  });
+  /* hovering a question lights the cards it holds up */
+  document.addEventListener("mouseover", function (e) { var d = e.target.closest && e.target.closest("[data-wid]"); if (d) lightHeld(d.getAttribute("data-wid")); });
+  document.addEventListener("mouseout", function (e) { if (e.target.closest && e.target.closest("[data-wid]") && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest("[data-wid]"))) lightHeld(null); });
+  function lightHeld(wid) {
+    Array.prototype.forEach.call(stageEl.querySelectorAll(".card.hl"), function (c) { c.classList.remove("hl"); });
+    if (!wid) return;
+    var w = C.waiting.filter(function (x) { return x.id === wid; })[0]; if (!w) return;
+    w.blocks.forEach(function (id) { var c = stageEl.querySelector('.card[data-p="' + w.project + '"][data-id="' + id + '"]'); if (c) c.style.boxShadow = "0 0 0 2px var(--warn)"; setTimeout(function () { if (c) c.style.boxShadow = ""; }, 900); });
+  }
+
+  /* ---------- tooltip ---------- */
+  function hideTip() { tipEl.classList.remove("on"); }
+  function showTip(el) {
+    var t = el.getAttribute("data-tip"); if (!t) return;
+    tipEl.textContent = t; tipEl.classList.add("on");
+    var r = el.getBoundingClientRect(), w = tipEl.offsetWidth, h = tipEl.offsetHeight;
+    var x = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2)), y = r.top - h - 8; if (y < 8) y = r.bottom + 8;
+    tipEl.style.left = x + "px"; tipEl.style.top = y + "px";
+  }
+  document.addEventListener("mouseover", function (e) { var el = e.target.closest && e.target.closest("[data-tip]"); if (el) showTip(el); });
+  document.addEventListener("mouseout", function (e) { if (e.target.closest && e.target.closest("[data-tip]")) hideTip(); });
+  document.addEventListener("focusin", function (e) { var el = e.target.closest && e.target.closest("[data-tip]"); if (el) showTip(el); });
+  document.addEventListener("focusout", hideTip);
+  window.addEventListener("scroll", hideTip, true);
+
+
+  /* ---------- live: poll /api/state every 5 s while the tab is visible ---------- */
+  var timer = null, inflight = false;
+  function colOf(t) { for (var i = 0; i < COLS.length; i++) if (COLS[i].test(t)) return COLS[i].id; return ""; }
+  function colMap() { var o = {}; projects.forEach(function (p) { p.tasks.forEach(function (t) { o[p.id + "/" + t.id] = colOf(t); }); }); return o; }
+  function pidsKey() { return projects.map(function (p) { return p.id; }).join("|"); }
+  function schedule() { clearTimeout(timer); timer = document.hidden ? null : setTimeout(poll, POLL); }
+  function poll() {
+    if (inflight) return; inflight = true; clearTimeout(timer);
+    var ctl = window.AbortController ? new AbortController() : null, kill = setTimeout(function () { if (ctl) ctl.abort(); }, 4000), t0 = Date.now();
+    fetch("/api/state", { cache: "no-store", signal: ctl ? ctl.signal : undefined })
+      .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+      .then(function (api) { clearTimeout(kill); inflight = false; apply(api, t0); schedule(); })
+      .catch(function () { clearTimeout(kill); inflight = false; down(); schedule(); });
+  }
+  function apply(api, t0) {
+    var was = MODE, oldCols = colMap(), oldKey = pidsKey(), oldOpen = waitingOpen().length;
+    var before = !was && projects.length ? rects() : null;
+    C = adapt(api); ALLP = C.projects; ALLE = api.errors || []; lastGood = NOWMS; MODE = "";
+    reconcile(t0 || 0); split();
+    $("clock").textContent = C.now.label;
+    Object.keys(S.sent).forEach(function (k) { if (!C.waiting.some(function (w) { return w.id === k; })) delete S.sent[k]; });
+    var first = !loaded; loaded = true;
+    if (was || pidsKey() !== oldKey) {                         /* first load, back from an error, or projects came or went */
+      S.landed = null; render(!!was || first || !oldKey, false); if (S.drawer) paintDrawer(false); return;
+    }
+    if (!projects.length) { renderSummary(); renderBadge(false); renderTable(); return; }
+    var nc = colMap(), moved = {};
+    Object.keys(nc).forEach(function (k) { if (oldCols[k] && oldCols[k] !== nc[k]) moved[k] = 1; });
+    S.landed = moved;                                          /* only tasks that changed column get the landing ring */
+    refresh(before, waitingOpen().length > oldOpen);
+    if (S.drawer) paintDrawer(false);
+    var n = Object.keys(moved).length; if (n) say(n === 1 ? "One task moved" : n + " tasks moved");
+  }
+  function down() {
+    if (MODE === "error") return;
+    MODE = "error"; closeDrawerSoft(); render(true);
+  }
+  function findW(id) { return C.waiting.filter(function (w) { return w.id === id; })[0]; }
+  function plainErr(status, msg) {
+    msg = String(msg || "");
+    var m = /already answered: (.*)$/.exec(msg);
+    if (m) return "Already answered: " + m[1] + ".";
+    if (status === 403) return /gate/i.test(msg) ? "Gates open only when you type go in the orchestrator tab." : "Conductor only takes answers from its own window. Reopen the app and try again.";
+    if (status === 404) return "This question is no longer on the board.";
+    if (status === 400) return msg ? cap(msg) + "." : "That answer could not be sent.";
+    return msg ? "Not sent: " + msg + "." : "Not sent. Try again.";
+  }
+  function sendAnswer(id, text) {
+    var w = findW(id); if (!w || S.busy[id] || w.rawKind !== "decision") return;
+    text = String(text || "").trim();
+    if (!text) { S.err[id] = "Write an answer first, or pick one of the options."; paintDrawer(false); return; }
+    S.busy[id] = true; delete S.err[id]; paintDrawer(false);
+    function done() { if (S.drawer && S.drawer.k === "tray") paintDrawer(false); }
+    fetch("/api/answer", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ project: w.project, id: w.rid, answer: text }) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { status: r.status, ok: r.ok && !!j.ok, j: j }; }); })
+      .then(function (res) {
+        delete S.busy[id];
+        if (!res.ok) { S.err[id] = plainErr(res.status, res.j && res.j.error); done(); return; }
+        S.sent[id] = text; refresh(null, false); done();
+        var el = drawerEl.querySelector('[data-wid="' + id + '"]'); if (el) el.focus({ preventScroll: true });
+        say("Sent to " + orchName(proj(w.project)));
+        poll();
+      })
+      .catch(function () { delete S.busy[id]; S.err[id] = "Could not reach Conductor's server, so nothing was sent. Try again."; done(); });
+  }
+  document.addEventListener("visibilitychange", function () { if (!LIVE) return; if (document.hidden) { clearTimeout(timer); timer = null; } else poll(); });
+
+  /* ---------- go ---------- */
+  if (LIVE) {
+    document.querySelector(".demo").hidden = true;             /* Move one task, Reset and N are demo-only */
+    render(true); poll();
+  } else {
+    $("clock").textContent = C.now.label;
+    render(true);
+  }
+}
+</script>
+</body>
+</html>
