@@ -16,6 +16,7 @@ import datetime as dt
 import fcntl
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -69,6 +70,32 @@ def die(msg):
 
 def csv(s):
     return [x.strip() for x in (s or "").split(",") if x.strip()]
+
+
+SAFE_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
+SAFE_SHA = re.compile(r"^[0-9a-fA-F]{4,40}$")
+
+
+def check_args(a):
+    """Ids, names and commits end up in STATUS.md and the Conductor page: allow only plain tokens."""
+    for k in ("id", "name", "lane", "by", "session"):
+        if k == "name" and a.f is cmd_init:  # init --name is the display name, free text
+            continue
+        v = getattr(a, k, None)
+        if isinstance(v, str) and v and not SAFE_ID.match(v):
+            die(f"--{k} {v!r}: use letters, digits, dot, dash or underscore (max 64)")
+    for k in ("commit", "sha"):
+        v = getattr(a, k, None)
+        if isinstance(v, str) and v and not SAFE_SHA.match(v):
+            die(f"--{k} {v!r}: not a commit hash")
+    for w in csv(getattr(a, "waits", None) or "") if isinstance(getattr(a, "waits", None), str) else []:
+        if not SAFE_ID.match(w):
+            die(f"--waits {w!r}: not a task id")
+    for pair in getattr(a, "pairs", None) or []:
+        name = pair.partition("=")[0]
+        if not SAFE_ID.match(name):
+            die(f"session name {name!r}: use letters, digits, dot, dash or underscore")
+
 
 
 # ---------- storage ----------
@@ -765,6 +792,7 @@ def main():
     a = ap.parse_args()
     if not a.docs and not getattr(a, "all", False):
         die("pass --docs <absolute docs folder> (or set BOARD_DOCS)")
+    check_args(a)
     a.f(a)
 
 

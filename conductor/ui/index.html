@@ -817,7 +817,7 @@ function conductor(DEMO) {
     return { c: "s-ok", t: "On track" };
   }
   /* ---------- drawn pieces ---------- */
-  function dot(s) { return '<i class="dot ' + s.state + '"></i>'; }
+  function dot(s) { return '<i class="dot ' + esc(s.state) + '"></i>'; }
   function av(p, s, cls, plain) { return '<span class="' + (cls || "av") + (s.state === "gone" ? " st-gone" : s.state === "closed" ? " st-closed" : "") + '" aria-hidden="true">' + ini(p, s) + (plain ? "" : dot(s)) + '</span>'; }
   function rawNote(s) { return s.raw ? "Claude Code says: " + s.raw : ""; }
   function sessLabel(p, s) { return roleName(p, s) + ", " + s.name + ", " + s.state + (s.raw ? " (" + s.raw + ")" : "") + ", seen " + ago(s.seen) + ". " + (s.state === "closed" ? "Was doing: " : "") + s.task; }
@@ -826,7 +826,7 @@ function conductor(DEMO) {
     return roleName(p, s) + " · " + cap(s.state) + (s.raw ? " (" + s.raw + ")" : "") + (s.state === "quiet" || s.state === "gone" ? " " + fmtS(s.hbQuiet != null ? s.hbQuiet : s.seen) : "") + "\n" + s.task;
   }
   function avButton(p, s) {
-    return '<button class="ab" data-act="session" data-p="' + p.id + '" data-s="' + esc(s.name) + '" aria-label="' + esc(sessLabel(p, s)) + '"' + T(sessTip(p, s)) + '>' + av(p, s, "a") + '</button>';
+    return '<button class="ab" data-act="session" data-p="' + esc(p.id) + '" data-s="' + esc(s.name) + '" aria-label="' + esc(sessLabel(p, s)) + '"' + T(sessTip(p, s)) + '>' + av(p, s, "a") + '</button>';
   }
 
   /* The Sessions cell fits 5 circles. More than that: the 4 most active, then a "+N" that opens the project on the Sessions page. */
@@ -860,11 +860,11 @@ function conductor(DEMO) {
   function row(p, i, anim) {
     var s = p.stats, st = statusOf(p), sel = !S.bad && p.id === S.pid, d = i * 60;
     var from = anim ? 0 : (S.shown[p.id] != null ? S.shown[p.id] : s.pct);
-    return '<div class="row' + (sel ? " sel" : "") + (anim ? " rise" : "") + '" role="row" data-go="' + p.id + '" style="--d:' + d + '">' +
-      '<div class="name" role="cell"><svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + P.chev + '</svg><div><span class="nml"><a href="#/p/' + p.id + '"' + (sel ? ' aria-current="true"' : "") + '>' + esc(p.name) + '</a>' + (LIVE && p.finished ? '<span class="fdone"' + T("Finished: all " + s.total + " tasks done") + '>' + sico("done") + '<span class="sr">Finished</span></span>' : "") + '</span>' +
+    return '<div class="row' + (sel ? " sel" : "") + (anim ? " rise" : "") + '" role="row" data-go="' + esc(p.id) + '" style="--d:' + d + '">' +
+      '<div class="name" role="cell"><svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + P.chev + '</svg><div><span class="nml"><a href="#/p/' + esc(p.id) + '"' + (sel ? ' aria-current="true"' : "") + '>' + esc(p.name) + '</a>' + (LIVE && p.finished ? '<span class="fdone"' + T("Finished: all " + s.total + " tasks done") + '>' + sico("done") + '<span class="sr">Finished</span></span>' : "") + '</span>' +
       (LIVE && S.perr[p.id] ? '<small class="err" role="alert">' + esc(S.perr[p.id]) + '</small>' : '<small>' + s.done + ' of ' + s.total + ' tasks' + (p.phase ? ' &middot; ' + esc(p.phase) : "") + '</small>') + '</div></div>' +
       '<div role="cell">' + bar(p, anim, d) + '</div>' +
-      '<div class="pct r' + rng(s.pct) + '" role="cell"' + T(RAMP[rng(s.pct)] + "%: " + RAMPN[rng(s.pct)]) + '><span class="cnt" data-from="' + from + '" data-to="' + s.pct + '" data-p="' + p.id + '">' + s.pct + '</span>%</div>' +
+      '<div class="pct r' + rng(s.pct) + '" role="cell"' + T(RAMP[rng(s.pct)] + "%: " + RAMPN[rng(s.pct)]) + '><span class="cnt" data-from="' + from + '" data-to="' + s.pct + '" data-p="' + esc(p.id) + '">' + s.pct + '</span>%</div>' +
       '<div role="cell"><span class="st ' + st.c + '">' + st.t + '</span></div>' +
       '<div class="avs" role="cell" aria-label="Sessions">' + avRow(p) + '</div>' + (LIVE ? menuCell(p.id, p.name) : "") + '</div>';
   }
@@ -959,7 +959,7 @@ function conductor(DEMO) {
       '<span>All projects</span><span class="pc"><span class="cnt" data-from="' + fromAll + '" data-to="' + all + '">' + all + '</span>%</span><small>' + done + ' of ' + tot + ' tasks</small></span>';
     projects.forEach(function (p, i) {
       var pct = p.stats.pct, from = anim ? 0 : (S.shown[p.id] != null ? S.shown[p.id] : pct);
-      h += '<a class="pchip r' + rng(pct) + (anim ? " rise" : "") + '" style="--d:' + ((i + 1) * 60) + '" href="#/p/' + p.id + '" aria-label="' + esc(p.name + ", " + pct + " percent done. Open project") + '"' + T(p.stats.done + " of " + p.stats.total + " tasks · " + RAMP[rng(pct)] + "%: " + RAMPN[rng(pct)]) + '>' + pm(p.id) + '<span class="pn">' + esc(p.name) + '</span>' + ring(pct, anim) +
+      h += '<a class="pchip r' + rng(pct) + (anim ? " rise" : "") + '" style="--d:' + ((i + 1) * 60) + '" href="#/p/' + esc(p.id) + '" aria-label="' + esc(p.name + ", " + pct + " percent done. Open project") + '"' + T(p.stats.done + " of " + p.stats.total + " tasks · " + RAMP[rng(pct)] + "%: " + RAMPN[rng(pct)]) + '>' + pm(p.id) + '<span class="pn">' + esc(p.name) + '</span>' + ring(pct, anim) +
         '<span class="pc"><span class="cnt" data-from="' + from + '" data-to="' + pct + '">' + pct + '</span>%</span></a>';
     });
     put(stripEl, h + '</div>', anim);
@@ -999,7 +999,7 @@ function conductor(DEMO) {
     var p = proj(S.pid);
     if (MODE || !p || S.bad) { bhEl.innerHTML = ""; return; }
     var w = waitingOpen(p.id).length, f = p.stats.by.fail, bits = [];
-    if (w) bits.push('<button class="lnk" data-act="tray" data-p="' + p.id + '">' + w + ' waiting on you</button>');
+    if (w) bits.push('<button class="lnk" data-act="tray" data-p="' + esc(p.id) + '">' + w + ' waiting on you</button>');
     if (f) bits.push(f + ' QA failure' + (f > 1 ? "s" : ""));
     put(bhEl, '<h2' + (anim ? ' class="fadein"' : "") + '>' + esc(p.name) + ' board</h2><span class="sub' + (anim ? " fadein" : "") + '">' + (bits.length ? bits.join(" &middot; ") : "Nothing waiting, nothing failed") + '</span>', anim);
   }
@@ -1044,10 +1044,10 @@ function conductor(DEMO) {
     var i = cardInfo(p, t), o = ownerOf(p, t), isSel = S.drawer && S.drawer.k === "task" && S.drawer.id === t.id && S.drawer.p === p.id;
     var avh = o ? '<span class="av' + (o.state === "gone" ? " st-gone" : o.state === "closed" ? " st-closed" : "") + '" aria-hidden="true"' + T(sessTip(p, o)) + '>' + ini(p, o) + (t.state === "done" ? "" : dot(o)) + '</span>' : '<span class="av none" aria-hidden="true"' + T("Not assigned yet") + '></span>';
     var lab = (tag ? p.name + ": " : "") + t.id + " " + t.title + ", " + LABEL[t.state] + (i.cls === "wait" ? ", waiting on you" : "") + (stale(t) ? ", quiet " + fmt(quietMin(t)) : "");
-    return '<article class="card ' + i.cls + (isSel ? " sel" : "") + (isLanded(p, t) ? " landed" : "") + '" role="button" tabindex="0" data-act="task" data-p="' + p.id + '" data-id="' + t.id + '" aria-label="' + esc(lab) + '">' +
+    return '<article class="card ' + i.cls + (isSel ? " sel" : "") + (isLanded(p, t) ? " landed" : "") + '" role="button" tabindex="0" data-act="task" data-p="' + esc(p.id) + '" data-id="' + esc(t.id) + '" aria-label="' + esc(lab) + '">' +
       (tag ? '<span class="ptag">' + pm(p.id) + '<span>' + esc(p.name) + '</span></span>' : "") +
       '<h3>' + esc(t.title) + '</h3>' + (i.note ? '<p>' + esc(i.note) + '</p>' : "") +
-      '<div class="meta"><span class="id">' + t.id + '</span>' + (i.chip ? '<span class="chip ' + i.cc + '">' + i.chip + '</span>' : "") + avh + '</div></article>';
+      '<div class="meta"><span class="id">' + esc(t.id) + '</span>' + (i.chip ? '<span class="chip ' + i.cc + '">' + i.chip + '</span>' : "") + avh + '</div></article>';
   }
 
   function skeletonBoard() {
@@ -1069,8 +1069,8 @@ function conductor(DEMO) {
         var h = card(x.p, x.t, tag);
         return anim ? h.replace('class="card ', 'class="card rise ').replace('data-act="task"', 'style="--d:' + (100 + ci * 40 + Math.min(j, 4) * 30) + '" data-act="task"') : h;
       }).join("") : '<div class="note">' + c.empty + '</div>';
-      if (c.limit && list.length > c.limit) body += '<button class="more" data-act="more" data-key="' + key + '" data-col="' + c.id + '" aria-expanded="' + !!open + '">' + (open ? "Show fewer" : "+" + rest + " more " + c.label.toLowerCase()) + '</button>';
-      return '<section class="col' + (anim ? " rise" : "") + '" style="--d:' + (80 + ci * 40) + '" data-col="' + c.id + '" aria-label="' + c.label + '"><div class="ch">' + c.icon + c.label + '<span class="n">' + list.length + '</span></div><div class="cl">' + body + '</div></section>';
+      if (c.limit && list.length > c.limit) body += '<button class="more" data-act="more" data-key="' + key + '" data-col="' + esc(c.id) + '" aria-expanded="' + !!open + '">' + (open ? "Show fewer" : "+" + rest + " more " + c.label.toLowerCase()) + '</button>';
+      return '<section class="col' + (anim ? " rise" : "") + '" style="--d:' + (80 + ci * 40) + '" data-col="' + esc(c.id) + '" aria-label="' + c.label + '"><div class="ch">' + c.icon + c.label + '<span class="n">' + list.length + '</span></div><div class="cl">' + body + '</div></section>';
     }).join("") + '</div>';
   }
   function colScroll() { var o = {}; Array.prototype.forEach.call(stageEl.querySelectorAll(".col"), function (c) { o[c.getAttribute("data-col")] = c.querySelector(".cl").scrollTop; }); return o; }
@@ -1078,7 +1078,7 @@ function conductor(DEMO) {
     if (S.page === "home") return boardHtml(homeList(), "home:" + S.filter, anim, true);
     if (S.bad) {
       var first = projects[0];
-      return '<div class="state" style="width:100%;align-self:flex-start"><span class="ico bad">' + ic("alert") + '</span><div class="grow"><h2>No project called ' + esc(S.bad) + '</h2><p>It may have been moved or renamed.</p></div><a class="btn pr" href="#/p/' + first.id + '">Back to ' + esc(first.name) + '</a></div>';
+      return '<div class="state" style="width:100%;align-self:flex-start"><span class="ico bad">' + ic("alert") + '</span><div class="grow"><h2>No project called ' + esc(S.bad) + '</h2><p>It may have been moved or renamed.</p></div><a class="btn pr" href="#/p/' + esc(first.id) + '">Back to ' + esc(first.name) + '</a></div>';
     }
     var p = proj(S.pid); return p ? boardHtml([p], "p:" + p.id, anim, false) : "";
   }
@@ -1108,7 +1108,7 @@ function conductor(DEMO) {
   function dlRow(k, v, cls) { return '<dt>' + k + '</dt><dd' + (cls ? ' class="' + cls + '"' : "") + '>' + v + '</dd>'; }
   function pill(p, id) {
     var t = task(p, id); if (!t) return '<span class="dash">' + id + '</span>';
-    return '<button class="tp" data-act="task" data-p="' + p.id + '" data-id="' + id + '" title="' + esc(t.title + ", " + LABEL[t.state]) + '">' + sico(t.state) + '<span class="id">' + id + '</span><span class="tn">' + esc(t.title) + '</span></button>';
+    return '<button class="tp" data-act="task" data-p="' + esc(p.id) + '" data-id="' + esc(id) + '" title="' + esc(t.title + ", " + LABEL[t.state]) + '">' + sico(t.state) + '<span class="id">' + esc(id) + '</span><span class="tn">' + esc(t.title) + '</span></button>';
   }
   function pillList(p, ids) { return ids.length ? ids.map(function (id) { return pill(p, id); }).join("") : '<span class="dash">None</span>'; }
   function qaBlock(p, t) {
@@ -1118,17 +1118,17 @@ function conductor(DEMO) {
     if (LIVE && t.state === "qa") return '<div class="qa pg"><b>In QA</b>' + (q && q.state === "working" && new RegExp("\\b" + t.id + "\\b").test(q.task) ? esc(q.name) + ' is on it.' : "Ready for QA " + ago(t.age) + ". Waiting for the QA session.") + '</div>';
     if (LIVE && t.state === "done") { var qs = (t.qa && t.qa.sha) || t.commit; return '<div class="qa ok"><b>Passed QA</b>' + (qs ? 'Passed on <span class="mono">' + esc(qs) + '</span>' + (t.qa && t.qa.at ? ', ' + ago(minsAgo(t.qa.at)) : "") + '.' : "Done.") + '</div>'; }
     if (LIVE && (t.state === "assigned" || t.state === "blocked")) return '<div class="qa"><b>Not in QA yet</b>' + (t.state === "assigned" ? "Sent to " + esc(laneLabel(p, t.lane)) + ". Goes to QA when it marks it ready." : "Blocked. Goes to QA once it is unblocked and marked ready.") + '</div>';
-    if (t.state === "fail") return '<div class="qa bad"><b>QA failed</b>' + esc(failNote(p, t)) + '. Failed ' + ago(t.age) + (t.commit ? ' on <span class="mono">' + t.commit + '</span>' : "") + '. Sent back to ' + esc(laneLabel(p, t.lane)) + '.</div>';
+    if (t.state === "fail") return '<div class="qa bad"><b>QA failed</b>' + esc(failNote(p, t)) + '. Failed ' + ago(t.age) + (t.commit ? ' on <span class="mono">' + esc(t.commit) + '</span>' : "") + '. Sent back to ' + esc(laneLabel(p, t.lane)) + '.</div>';
     if (t.state === "qa") return '<div class="qa pg"><b>In QA</b>' + (q && q.task.indexOf(t.id + " ") === 0 ? esc(q.name) + ' is on it: ' + esc(q.task.replace(/^\S+\s/, "").replace(/^./, function (c) { return c.toLowerCase(); })) + "." : "Ready for QA " + ago(t.age) + ". Waiting for the QA session.") + '</div>';
-    if (t.state === "done") return '<div class="qa ok"><b>Passed QA</b>' + (t.commit ? 'Merged as <span class="mono">' + t.commit + '</span>.' : "Done.") + '</div>';
+    if (t.state === "done") return '<div class="qa ok"><b>Passed QA</b>' + (t.commit ? 'Merged as <span class="mono">' + esc(t.commit) + '</span>.' : "Done.") + '</div>';
     return '<div class="qa"><b>Not in QA yet</b>' + (t.state === "progress" ? "Goes to QA when " + esc(laneLabel(p, t.lane)) + " marks it ready." : "Starts once what it waits on is done.") + '</div>';
   }
   function taskDrawer(p, t) {
     var ses = sessionByRole(p, t.lane), hb = heldBy(p, t), info = cardInfo(p, t);
-    var h = '<div class="dh"><div class="grow"><span class="id mono">' + t.id + '</span>' + (info.cc === "c-w" ? '<span class="chip c-w">' + info.chip + '</span>' : "") + '</div><button class="x" data-act="close" aria-label="Close">' + ic("close") + '</button></div>' +
+    var h = '<div class="dh"><div class="grow"><span class="id mono">' + esc(t.id) + '</span>' + (info.cc === "c-w" ? '<span class="chip c-w">' + info.chip + '</span>' : "") + '</div><button class="x" data-act="close" aria-label="Close">' + ic("close") + '</button></div>' +
       '<div class="db"><h2 id="dtitle">' + esc(t.title) + '</h2><dl class="dl">' +
       dlRow("Status", '<span style="display:flex;align-items:center;gap:8px;font-weight:600"><span style="width:16px;height:16px">' + sico(t.state) + '</span>' + LABEL[t.state] + (t.state === "progress" || t.state === "done" ? "" : "") + '</span>') +
-      dlRow("Lane", ses ? '<button class="tp" data-act="session" data-p="' + p.id + '" data-s="' + esc(ses.name) + '">' + av(p, ses, "av") + '<span>' + esc(laneLabel(p, t.lane)) + '</span><span class="tn">' + esc(ses.name) + '</span></button>' : esc(laneLabel(p, t.lane))) +
+      dlRow("Lane", ses ? '<button class="tp" data-act="session" data-p="' + esc(p.id) + '" data-s="' + esc(ses.name) + '">' + av(p, ses, "av") + '<span>' + esc(laneLabel(p, t.lane)) + '</span><span class="tn">' + esc(ses.name) + '</span></button>' : esc(laneLabel(p, t.lane))) +
       dlRow("Changed", LIVE ? ago(t.age) : t.age > 0 ? ago(t.age) : "Not started") +
       dlRow("Commit", t.commit ? '<span class="mono">' + esc(t.commit) + '</span>' : '<span class="dash">None yet</span>') +
       (LIVE && t.note ? dlRow("Note", '<span>' + esc(t.note) + '</span>') : "") +
@@ -1136,7 +1136,7 @@ function conductor(DEMO) {
       '<h4>Waits on</h4><div class="acts" style="flex-direction:column;align-items:stretch;gap:4px">' + pillList(p, t.waits) + '</div>' +
       '<h4>Holds up</h4><div class="acts" style="flex-direction:column;align-items:stretch;gap:4px">' + pillList(p, holds(p, t.id)) + '</div>' +
       '<h4>QA</h4>' + qaBlock(p, t);
-    if (hb.length) h += '<h4>Waiting on you</h4>' + hb.map(function (w) { return '<button class="tp big" data-act="trayopen" data-w="' + w.id + '">' + ic("flag", "") .replace("<svg ", '<svg style="width:16px;height:16px;flex:none" ') + '<span class="tn" style="color:var(--ink);font-weight:600">' + esc(w.title) + '</span></button>'; }).join("");
+    if (hb.length) h += '<h4>Waiting on you</h4>' + hb.map(function (w) { return '<button class="tp big" data-act="trayopen" data-w="' + esc(w.id) + '">' + ic("flag", "") .replace("<svg ", '<svg style="width:16px;height:16px;flex:none" ') + '<span class="tn" style="color:var(--ink);font-weight:600">' + esc(w.title) + '</span></button>'; }).join("");
     return h + '</div>';
   }
 
@@ -1175,14 +1175,14 @@ function conductor(DEMO) {
     return la ? (la.sha ? '<span class="mono">' + esc(la.sha) + '</span> ' : "") + '<b>' + esc(la.text) + '</b> &middot; ' + ago(la.min) : "No commits or messages yet";
   }
   var NOWL = { working: "Doing now", quiet: "Quiet on", idle: "Idle", stopped: "Stopped", gone: "Ended", closed: "Was doing" };
-  function schip(s) { return '<span class="sch sch-' + s.state + '"' + (s.raw ? T(rawNote(s)) : "") + '><i></i>' + cap(s.state) + '</span>'; }
+  function schip(s) { return '<span class="sch sch-' + esc(s.state) + '"' + (s.raw ? T(rawNote(s)) : "") + '><i></i>' + cap(s.state) + '</span>'; }
   function mrow(l, v) { return '<span class="ml">' + l + '</span><span class="mv">' + v + '</span>'; }
   function sCard(p, s, d, anim) {
     var inf = sessInfo(p, s), la = lastAct(p, s), sel = S.drawer && S.drawer.k === "session" && S.drawer.p === p.id && S.drawer.id === s.name;
     var now = '<span class="nl">' + NOWL[s.state] + '</span>' + (inf.t
-      ? '<span class="nt"><b>' + esc(inf.t.title) + '</b><span class="id mono">' + inf.t.id + '</span></span>'
+      ? '<span class="nt"><b>' + esc(inf.t.title) + '</b><span class="id mono">' + esc(inf.t.id) + '</span></span>'
       : '<span class="nt"><b>' + esc(s.task) + '</b></span>');
-    return '<button class="scard sc-' + s.state + (sel ? " sel" : "") + (anim ? " rise" : "") + '" style="--d:' + d + '" data-act="session" data-p="' + p.id + '" data-s="' + esc(s.name) + '" aria-label="' + esc(sessLabel(p, s) + " Open details") + '">' +
+    return '<button class="scard sc-' + esc(s.state) + (sel ? " sel" : "") + (anim ? " rise" : "") + '" style="--d:' + d + '" data-act="session" data-p="' + esc(p.id) + '" data-s="' + esc(s.name) + '" aria-label="' + esc(sessLabel(p, s) + " Open details") + '">' +
       '<span class="sc-h">' + av(p, s, "a md") + '<span class="tx"><b>' + esc(s.name) + '</b><span>' + esc(roleName(p, s)) + (s.model ? ' &middot; ' + esc(s.model) : "") + '</span></span>' + (s.state === "working" ? "" : schip(s)) + '</span>' +
       '<span class="now">' + now + '</span>' +
       '<span class="mg">' + (inf.on != null ? mrow("On it for", fmt(inf.on)) : "") + mrow("Last activity", ago(s.seen)) + (LIVE && s.role === "orchestrator" ? mrow("Heartbeat", p.hbMin == null ? "None yet" : ago(p.hbMin)) : "") + mrow("Last " + (la ? la.kind : "commit"), laLine(la)) + '</span></button>';
@@ -1233,13 +1233,13 @@ function conductor(DEMO) {
   }
   function wBlock(w) {
     var p = proj(w.project), sent = S.sent[w.id], ri = recIndex(w), pi = ri >= 0 ? ri : 0, po = optKey(w.options[pi]), open = S.pick[w.id];
-    var h = '<div class="w' + (sent ? " dn" : "") + (S.hlw === w.id ? " hl" : "") + '" data-wid="' + w.id + '"><div class="w-top"><span class="chip">' + esc(w.kind) + '</span><span>' + esc(p.name) + '</span><span class="age">' + fmt(w.age) + '</span></div><h3>' + esc(w.title) + '</h3>';
-    if (sent) return h + '<div class="ans">' + ic("check") + '<span>Answered: ' + esc(optKey(sent).t) + '</span><button class="btn gh" data-act="undo" data-w="' + w.id + '">Undo</button></div></div>';
+    var h = '<div class="w' + (sent ? " dn" : "") + (S.hlw === w.id ? " hl" : "") + '" data-wid="' + esc(w.id) + '"><div class="w-top"><span class="chip">' + esc(w.kind) + '</span><span>' + esc(p.name) + '</span><span class="age">' + fmt(w.age) + '</span></div><h3>' + esc(w.title) + '</h3>';
+    if (sent) return h + '<div class="ans">' + ic("check") + '<span>Answered: ' + esc(optKey(sent).t) + '</span><button class="btn gh" data-act="undo" data-w="' + esc(w.id) + '">Undo</button></div></div>';
     h += '<p class="det">' + esc(w.detail) + '</p>';
     if (w.blocks.length) h += '<div class="hold"><span class="hd">Holds up</span>' + w.blocks.map(function (id) { return task(p, id) ? pill(p, id) : ""; }).join("") + '</div>';
     h += '<div class="rec"><b>Orchestrator suggests</b>' + esc(w.recommendation) + '</div>';
-    h += '<div class="acts"><button class="btn pr" data-act="send" data-w="' + w.id + '" data-o="' + esc(w.options[pi]) + '">' + (po.k ? "Go with " + po.k : esc(po.t)) + '</button><button class="btn gh" data-act="others" data-w="' + w.id + '" aria-expanded="' + !!open + '">' + (open ? "Hide options" : "Other options") + '</button></div>';
-    if (open) h += '<div class="opts">' + w.options.map(function (o, i) { if (i === pi) return ""; var k = optKey(o); return '<button class="opt" data-act="send" data-w="' + w.id + '" data-o="' + esc(o) + '">' + (k.k ? '<b>' + k.k + '</b>' : "") + esc(k.t) + '</button>'; }).join("") + '</div>';
+    h += '<div class="acts"><button class="btn pr" data-act="send" data-w="' + esc(w.id) + '" data-o="' + esc(w.options[pi]) + '">' + (po.k ? "Go with " + po.k : esc(po.t)) + '</button><button class="btn gh" data-act="others" data-w="' + esc(w.id) + '" aria-expanded="' + !!open + '">' + (open ? "Hide options" : "Other options") + '</button></div>';
+    if (open) h += '<div class="opts">' + w.options.map(function (o, i) { if (i === pi) return ""; var k = optKey(o); return '<button class="opt" data-act="send" data-w="' + esc(w.id) + '" data-o="' + esc(o) + '">' + (k.k ? '<b>' + k.k + '</b>' : "") + esc(k.t) + '</button>'; }).join("") + '</div>';
     return h + '</div>';
   }
   /* live tray item: decisions answer through /api/answer; gates and stuck sessions only say where to go */
@@ -1252,7 +1252,7 @@ function conductor(DEMO) {
     if (w.rawKind === "gate") return h + '<p class="det">Type go in the ' + esc(p.id) + '-orchestrator tab to open this.</p></div>';
     if (w.rawKind === "stuck") {
       var ss = w.session && sessionByName(p, w.session);
-      return h + '<div class="stuck">' + (ss ? '<button class="tp" data-act="session" data-p="' + p.id + '" data-s="' + esc(ss.name) + '">' + av(p, ss, "av") + '<span>' + esc(ss.name) + '</span></button>' : '<span class="mono">' + esc(w.session || "A session") + '</span>') + '<span>Check its tab.</span></div></div>';
+      return h + '<div class="stuck">' + (ss ? '<button class="tp" data-act="session" data-p="' + esc(p.id) + '" data-s="' + esc(ss.name) + '">' + av(p, ss, "av") + '<span>' + esc(ss.name) + '</span></button>' : '<span class="mono">' + esc(w.session || "A session") + '</span>') + '<span>Check its tab.</span></div></div>';
     }
     var ri = w.options.length ? recIndex(w) : -1, fid = "fa-" + w.id.replace(/\W/g, "_");
     if (w.options.length) h += '<div class="opts">' + w.options.map(function (o, i) { var k = optKey(o); return '<button class="opt' + (i === ri ? " rk" : "") + '" data-act="answer" data-w="' + esc(w.id) + '" data-o="' + esc(o) + '"' + dis + '>' + (k.k ? '<b>' + k.k + '</b>' : "") + esc(k.t) + '</button>'; }).join("") + '</div>';
@@ -1300,9 +1300,9 @@ function conductor(DEMO) {
   }
   function markSelected() {
     Array.prototype.forEach.call(document.querySelectorAll(".card.sel"), function (c) { c.classList.remove("sel"); });
-    if (S.drawer && S.drawer.k === "task") { var c = stageEl.querySelector('.card[data-p="' + S.drawer.p + '"][data-id="' + S.drawer.id + '"]'); if (c) c.classList.add("sel"); }
+    if (S.drawer && S.drawer.k === "task") { var c = stageEl.querySelector('.card[data-p="' + CSS.escape(S.drawer.p) + '"][data-id="' + CSS.escape(S.drawer.id) + '"]'); if (c) c.classList.add("sel"); }
     Array.prototype.forEach.call(document.querySelectorAll(".scard.sel"), function (c) { c.classList.remove("sel"); });
-    if (S.drawer && S.drawer.k === "session") { var sc = sessEl.querySelector('.scard[data-p="' + S.drawer.p + '"][data-s="' + S.drawer.id + '"]'); if (sc) sc.classList.add("sel"); }
+    if (S.drawer && S.drawer.k === "session") { var sc = sessEl.querySelector('.scard[data-p="' + CSS.escape(S.drawer.p) + '"][data-s="' + CSS.escape(S.drawer.id) + '"]'); if (sc) sc.classList.add("sel"); }
   }
   function selOf(el) {
     var s = '[data-act="' + el.getAttribute("data-act") + '"]';
@@ -1388,7 +1388,7 @@ function conductor(DEMO) {
     var before = rects();
     picked.state = to; picked.age = 0; pp.stats = stats(pp); S.landed = picked.id;
     refresh(before);
-    var col = stageEl.querySelector('.card[data-id="' + picked.id + '"]'); if (col && col.scrollIntoView && stageEl.querySelector(".board").scrollWidth > stageEl.clientWidth + 4) col.scrollIntoView({ inline: "center", block: "nearest", behavior: RM() ? "auto" : "smooth" });
+    var col = stageEl.querySelector('.card[data-id="' + CSS.escape(picked.id) + '"]'); if (col && col.scrollIntoView && stageEl.querySelector(".board").scrollWidth > stageEl.clientWidth + 4) col.scrollIntoView({ inline: "center", block: "nearest", behavior: RM() ? "auto" : "smooth" });
     say(picked.title + " moved to " + LABEL[to]);
   }
   function demoReset() {
@@ -1598,7 +1598,7 @@ function conductor(DEMO) {
     Array.prototype.forEach.call(stageEl.querySelectorAll(".card.hl"), function (c) { c.classList.remove("hl"); });
     if (!wid) return;
     var w = C.waiting.filter(function (x) { return x.id === wid; })[0]; if (!w) return;
-    w.blocks.forEach(function (id) { var c = stageEl.querySelector('.card[data-p="' + w.project + '"][data-id="' + id + '"]'); if (c) c.style.boxShadow = "0 0 0 2px var(--warn)"; setTimeout(function () { if (c) c.style.boxShadow = ""; }, 900); });
+    w.blocks.forEach(function (id) { var c = stageEl.querySelector('.card[data-p="' + CSS.escape(w.project) + '"][data-id="' + CSS.escape(id) + '"]'); if (c) c.style.boxShadow = "0 0 0 2px var(--warn)"; setTimeout(function () { if (c) c.style.boxShadow = ""; }, 900); });
   }
 
   /* ---------- tooltip ---------- */
