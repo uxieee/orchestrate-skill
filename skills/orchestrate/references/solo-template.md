@@ -73,6 +73,14 @@ in yet is not active until they do.
      helpers.
 6. After each step: `{{BOARD}} heartbeat --by {{ID}}-orchestrator` and a one-line lane-note update.
 
+### Optional tasks
+When the user says a task isn't required ("we don't need T7 for this", "make it optional"): `{{BOARD}} task <id> --optional --note "user: <their words>" --by {{ID}}-orchestrator`
+and a dated DECISIONS.md line. It stays on the board and can still be worked on, but no longer counts
+toward progress or ALL TASKS DONE. If board.py notes that required tasks wait on it, ask the user in the same
+reply whether those tasks should still wait (then `task-add <id> --update --waits ...`). `--required` undoes it.
+READY TO START always gives a lane its required tasks before optional ones; a lane mid-way through an
+optional task finishes it unless they say to drop it.
+
 ### Repeated failures (the board prints BREAKER at the 3rd FAIL)
 - 2nd FAIL: read the issues and the diff. If a check or the plan is wrong, fix it by DECISION.
 - **3rd FAIL**: don't send a 4th round to the same builder. Diagnose first: is a check or the plan
@@ -108,7 +116,9 @@ DECISIONS.md entry, run the step exactly as the plan says, `{{BOARD}} task <id> 
 and report the result.
 
 ### Finish
-When the summary says ALL TASKS DONE: a fresh `orchestrate-qa` helper does the final review:
+When the summary says ALL TASKS DONE (required tasks only) and also OPTIONAL OPEN, ask the user once:
+finish those optional tasks first, or wrap up and leave them on the board. Then a fresh
+`orchestrate-qa` helper does the final review:
 `Final review of {{NAME}} at HEAD of {{CODE}}. Read {{DOCS}}/SOLO.md section QA (final review).`
 FAIL -> its issues become tasks; carry on. PASS -> `{{BOARD}} stats` into the wrap-up in
 `lanes/orchestrator.md`, then sweep QA's copy exactly as SESSIONS-style builds do (move a clean,

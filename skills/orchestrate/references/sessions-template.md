@@ -218,6 +218,14 @@ words typed in this session open it, and only that gate. After their go: `{{BOAR
 plan says, mark it `{{BOARD}} task <id> --state done --note "The user said go at <time>; <result>"`,
 and report the result to them.
 
+### Optional tasks
+When the user says a task isn't required ("we don't need T7 for this", "make it optional"): `{{BOARD}} task <id> --optional --note "user: <their words>" --by {{ID}}-orchestrator`
+and a dated DECISIONS.md line. It stays on the board and can still be worked on, but no longer counts
+toward progress or ALL TASKS DONE. If board.py notes that required tasks wait on it, ask the user in the same
+reply whether those tasks should still wait (then `task-add <id> --update --waits ...`). `--required` undoes it.
+READY TO START always gives a lane its required tasks before optional ones; a lane mid-way through an
+optional task finishes it unless they say to drop it.
+
 ### Repeated failures and stuck work
 More rounds of the same approach rarely converge: late rounds mostly bring regressions from the last
 fix or the same defect back. So:
@@ -252,7 +260,10 @@ they will cross a gate, weaken a test or rewrite history.
   its tab: `/loop 10m Check your messages and run the board summary, then continue your task or wait for START TASK.`
 
 ### Finish
-When the summary says ALL TASKS DONE: `INSTRUCTION: final review` to `{{ID}}-qa`. On
+When the summary says ALL TASKS DONE (required tasks only) and also OPTIONAL OPEN, ask the user once,
+in one line: finish those optional tasks first, or wrap up and leave them on the board. Optional
+tasks still in progress keep going until they answer. Then:
+`INSTRUCTION: final review` to `{{ID}}-qa`. On
 `FINAL FAIL`, add each issue as a task for its owning lane (`{{BOARD}} task-add …`) and carry on.
 On `FINAL PASS`: run `{{BOARD}} stats` and put its line in the wrap-up. Then sweep the copies. For each repo this build used, run
 `git -C "<repo>" worktree list`. A copy belongs to this build when its path starts with `{{WT}}/{{ID}}-`.

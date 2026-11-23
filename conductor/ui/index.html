@@ -668,7 +668,7 @@ function conductor(DEMO) {
       var p = { id: st.id, name: st.name || st.id, phase: st.phase || "", target: st.target || "", hbMin: hb, lanes: lanes, sessions: sessions, timeline: null, marks: [] };
       p.tasks = (st.tasks || []).map(function (t) {
         var x = { id: t.id, title: t.title || t.id, lane: t.lane || "", state: LABEL[t.state] ? t.state : "todo", waits: t.waits || [], commit: t.commit || "",
-          age: minsAgo(t.updatedAt) || 0, qa: t.qa || null, fails: t.fails || 0, note: t.note || "" };
+          age: minsAgo(t.updatedAt) || 0, qa: t.qa || null, fails: t.fails || 0, note: t.note || "", optional: !!t.optional };
         /* last activity, as board.py counts it: the task's own update or anything its lane session did */
         var ls = x.lane === "orchestrator" ? null : raw.filter(function (s) { return s.lane === x.lane; })[0], acts = [x.age];
         if (ls) [ls.seen, (ls.lastCommit || {}).at, (ls.lastMessage || {}).at].forEach(function (a) { var m = minsAgo(a); if (m != null) acts.push(m); });
@@ -753,9 +753,10 @@ function conductor(DEMO) {
   function stale(t) { return t.state === "progress" && quietMin(t) > STALE; }
   function stats(p) {
     var by = {}; Object.keys(LABEL).forEach(function (k) { by[k] = 0; });
-    p.tasks.forEach(function (t) { by[t.state] = (by[t.state] || 0) + 1; });
-    var total = p.tasks.length;
-    return { by: by, total: total, done: by.done, pct: total ? Math.round(by.done / total * 100) : 0 };
+    var req = p.tasks.filter(function (t) { return !t.optional; }), opt = p.tasks.length - req.length;  /* optional tasks never move progress */
+    req.forEach(function (t) { by[t.state] = (by[t.state] || 0) + 1; });
+    var total = req.length;
+    return { by: by, total: total, done: by.done, pct: total ? Math.round(by.done / total * 100) : 0, opt: opt };
   }
   function failNote(p, t) {
     if (LIVE) { var n = (t.qa && t.qa.issues) || 0; return n ? n + " issue" + (n > 1 ? "s" : "") + " found" : "Failed QA"; }
@@ -847,7 +848,7 @@ function conductor(DEMO) {
   var RANK = { done: 0, qa: 1, progress: 2, fail: 3, blocked: 4, assigned: 5, todo: 5 };
   function bar(p, anim, d) {
     var s = p.stats, prevDone = S.doneShown[p.id];
-    var ts = p.tasks.slice().sort(function (a, b) { return RANK[a.state] - RANK[b.state] || a.age - b.age; });
+    var ts = p.tasks.filter(function (t) { return !t.optional; }).sort(function (a, b) { return RANK[a.state] - RANK[b.state] || a.age - b.age; });
     var segs = ts.map(function (t, i) {
       var c = t.state === "done" ? "g-d" : t.state === "progress" ? "g-w" : t.state === "qa" ? "g-q" : t.state === "fail" ? "g-f" : "";
       var isNew = !anim && prevDone != null && t.state === "done" && i >= prevDone;
@@ -1043,11 +1044,11 @@ function conductor(DEMO) {
   function card(p, t, tag) {
     var i = cardInfo(p, t), o = ownerOf(p, t), isSel = S.drawer && S.drawer.k === "task" && S.drawer.id === t.id && S.drawer.p === p.id;
     var avh = o ? '<span class="av' + (o.state === "gone" ? " st-gone" : o.state === "closed" ? " st-closed" : "") + '" aria-hidden="true"' + T(sessTip(p, o)) + '>' + ini(p, o) + (t.state === "done" ? "" : dot(o)) + '</span>' : '<span class="av none" aria-hidden="true"' + T("Not assigned yet") + '></span>';
-    var lab = (tag ? p.name + ": " : "") + t.id + " " + t.title + ", " + LABEL[t.state] + (i.cls === "wait" ? ", waiting on you" : "") + (stale(t) ? ", quiet " + fmt(quietMin(t)) : "");
+    var lab = (tag ? p.name + ": " : "") + t.id + " " + t.title + ", " + LABEL[t.state] + (i.cls === "wait" ? ", waiting on you" : "") + (stale(t) ? ", quiet " + fmt(quietMin(t)) : "") + (t.optional ? ", optional" : "");
     return '<article class="card ' + i.cls + (isSel ? " sel" : "") + (isLanded(p, t) ? " landed" : "") + '" role="button" tabindex="0" data-act="task" data-p="' + esc(p.id) + '" data-id="' + esc(t.id) + '" aria-label="' + esc(lab) + '">' +
       (tag ? '<span class="ptag">' + pm(p.id) + '<span>' + esc(p.name) + '</span></span>' : "") +
       '<h3>' + esc(t.title) + '</h3>' + (i.note ? '<p>' + esc(i.note) + '</p>' : "") +
-      '<div class="meta"><span class="id">' + esc(t.id) + '</span>' + (i.chip ? '<span class="chip ' + i.cc + '">' + i.chip + '</span>' : "") + avh + '</div></article>';
+      '<div class="meta"><span class="id">' + esc(t.id) + '</span>' + (i.chip ? '<span class="chip ' + i.cc + '">' + i.chip + '</span>' : "") + (t.optional ? '<span class="chip"' + T("Optional: doesn't count toward progress") + '>Optional</span>' : "") + avh + '</div></article>';
   }
 
   function skeletonBoard() {
@@ -1129,6 +1130,7 @@ function conductor(DEMO) {
       '<div class="db"><h2 id="dtitle">' + esc(t.title) + '</h2><dl class="dl">' +
       dlRow("Status", '<span style="display:flex;align-items:center;gap:8px;font-weight:600"><span style="width:16px;height:16px">' + sico(t.state) + '</span>' + LABEL[t.state] + (t.state === "progress" || t.state === "done" ? "" : "") + '</span>') +
       dlRow("Lane", ses ? '<button class="tp" data-act="session" data-p="' + esc(p.id) + '" data-s="' + esc(ses.name) + '">' + av(p, ses, "av") + '<span>' + esc(laneLabel(p, t.lane)) + '</span><span class="tn">' + esc(ses.name) + '</span></button>' : esc(laneLabel(p, t.lane))) +
+      (t.optional ? dlRow("Counts", '<span>No, optional: progress and "done" ignore it</span>') : "") +
       dlRow("Changed", LIVE ? ago(t.age) : t.age > 0 ? ago(t.age) : "Not started") +
       dlRow("Commit", t.commit ? '<span class="mono">' + esc(t.commit) + '</span>' : '<span class="dash">None yet</span>') +
       (LIVE && t.note ? dlRow("Note", '<span>' + esc(t.note) + '</span>') : "") +

@@ -118,6 +118,8 @@ Then:
    - `B session <id>-<lane> --role implementer --lane <lane> --no-seen` for each lane, then
      `B session <id>-qa --role qa --no-seen` and `B session <id>-orchestrator --role orchestrator --no-seen`
    - `B task-add <task> --title "<title>" --lane <lane> --waits "<ids>"` for each task, in plan order
+     (add `--optional` for a task the plan marks nice-to-have: it stays on the board but never counts
+     toward progress or ALL TASKS DONE)
    - `B validate`, and fix everything it reports.
 5. Extra copies of the code live in one place. Create `<workspace>/.wt`. Only when it sits
    inside a repo, add `.wt/` to that repo's `.git/info/exclude` (`git -C "<repo>" rev-parse
