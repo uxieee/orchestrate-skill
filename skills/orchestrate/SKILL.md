@@ -160,8 +160,10 @@ minutes (its loop stops on usage limits, closed tabs and loop expiry). Only on a
 `board.py --docs "<docs>" watchdog` every 15 minutes, and tell them how to remove it:
 - **macOS**: a launchd agent, `~/Library/LaunchAgents/com.conductor.<id>.watchdog.plist`,
   `StartInterval` 900, then `launchctl load` it. Remove: `launchctl unload` + delete the file.
-- **Windows**: write `<docs>/watchdog.cmd` with one line, `@<python> "<board.py>" --docs "<docs>" watchdog`
-  (Windows paths: `cygpath -w "<path>"` gives them; `<python>` as picked above), then
+- **Windows**: write `<docs>/watchdog.cmd` with one line,
+  `@"<python.exe>" "<board.py>" --docs "<docs>" watchdog >> "<docs>\watchdog.log" 2>&1`, all as Windows
+  paths (`cygpath -w "<path>"` gives them). `<python.exe>` must be the full path, because Task Scheduler
+  doesn't get your terminal's PATH: `<python> -c "import sys; print(sys.executable)"` prints it. Then
   `MSYS_NO_PATHCONV=1 schtasks /Create /SC MINUTE /MO 15 /TN "conductor-<id>-watchdog" /TR "\"<docs as Windows path>\watchdog.cmd\"" /F`
   (`MSYS_NO_PATHCONV=1` stops Git Bash rewriting the `/` switches). Check: `MSYS_NO_PATHCONV=1 schtasks /Query /TN "conductor-<id>-watchdog"`.
   Remove: `MSYS_NO_PATHCONV=1 schtasks /Delete /TN "conductor-<id>-watchdog" /F` + delete the file.

@@ -54,12 +54,15 @@ echo "$reg" | grep -q 'demo'; check $? "registered in ~/.conductor/projects.json
 
 # Watchdog with the exact schtasks line from SKILL.md step 4
 WDOCS="$(cygpath -w "$DOCS")"
-printf '@%s "%s" --docs "%s" watchdog\r\n' "$PY" "$(cygpath -w "$HOME/.claude/skills/orchestrate/scripts/board.py")" "$WDOCS" > "$DOCS/watchdog.cmd"
+PYEXE="$($PY -c 'import sys; print(sys.executable)')"
+printf '@"%s" "%s" --docs "%s" watchdog >> "%s\\watchdog.log" 2>&1\r\n' "$PYEXE" "$(cygpath -w "$HOME/.claude/skills/orchestrate/scripts/board.py")" "$WDOCS" "$WDOCS" > "$DOCS/watchdog.cmd"
+cat "$DOCS/watchdog.cmd"
 MSYS_NO_PATHCONV=1 schtasks /Create /SC MINUTE /MO 15 /TN "$TASK" /TR "\"$WDOCS\\watchdog.cmd\"" /F >/dev/null; check $? "schtasks /Create as SKILL.md writes it"
 MSYS_NO_PATHCONV=1 schtasks /Query /TN "$TASK" >/dev/null; check $? "schtasks /Query"
 MSYS_NO_PATHCONV=1 schtasks /Run /TN "$TASK" >/dev/null
 for i in $(seq 1 60); do [ -f "$DOCS/.watchdog-pinged" ] && break; sleep 1; done
 [ -f "$DOCS/.watchdog-pinged" ]; check $? "scheduled watchdog ran and pinged"
+[ -f "$DOCS/watchdog.log" ] && { echo "   watchdog.log:"; sed 's/^/   /' "$DOCS/watchdog.log"; }
 MSYS_NO_PATHCONV=1 schtasks /Delete /TN "$TASK" /F >/dev/null; check $? "schtasks /Delete"
 
 # Conductor.cmd, the Windows double-click launcher
