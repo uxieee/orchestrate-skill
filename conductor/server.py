@@ -12,13 +12,21 @@ Binds to 127.0.0.1 only. POSTs must come from this page's own origin, so no othe
 answer for you. Runs until the Mac restarts. It must not stop itself when no page is polling:
 browsers pause or freeze background tabs, so silence doesn't mean the window was closed.
 """
-import fcntl
 import json
 import os
 import subprocess
 import sys
 import time
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+
+try:                      # macOS / Linux
+    import fcntl
+    msvcrt = None
+except ImportError:       # Windows
+    fcntl = None
+    import msvcrt
+
+WINDOWS = os.name == "nt"
 
 PORT = int(os.environ.get("CONDUCTOR_PORT", "4747"))
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -29,6 +37,54 @@ ORIGINS = {f"http://127.0.0.1:{PORT}", f"http://localhost:{PORT}"}
 HOSTS = {f"127.0.0.1:{PORT}", f"localhost:{PORT}"}  # anything else is a website using DNS rebinding
 EVENTS_SENT = 60
 SESSIONS_DIR = os.path.expanduser("~/.claude/sessions")
+
+
+def pid_alive(pid):
+    """True if the process exists. Never signals it: on Windows os.kill(pid, 0) sends Ctrl+C."""
+    if not pid or pid <= 0:
+        return False
+    if WINDOWS:
+        import ctypes
+        k = ctypes.windll.kernel32
+        h = k.OpenProcess(0x1000, False, int(pid))  # PROCESS_QUERY_LIMITED_INFORMATION
+        if not h:
+            return False
+        code = ctypes.c_ulong()
+        ok = k.GetExitCodeProcess(h, ctypes.byref(code))
+        k.CloseHandle(h)
+        return bool(ok) and code.value == 259     # STILL_ACTIVE
+    try:
+        os.kill(pid, 0)
+        return True
+    except PermissionError:
+        return True
+    except OSError:
+        return False
+
+
+def lock_file(f):
+    if fcntl:
+        fcntl.flock(f, fcntl.LOCK_EX)
+        return
+    f.seek(0)
+    while True:
+        try:
+            msvcrt.locking(f.fileno(), msvcrt.LK_NBLCK, 1)
+            return
+        except OSError:
+            time.sleep(0.05)
+
+
+def read_json(path):
+    """board.py replaces state files atomically; on Windows a read can briefly collide with that."""
+    for i in range(20):
+        try:
+            with open(path, encoding="utf-8") as f:
+                return json.load(f)
+        except PermissionError:
+            if not WINDOWS or i == 19:
+                raise
+            time.sleep(0.02)
 
 
 def live_sessions():
@@ -43,12 +99,13 @@ def live_sessions():
         if not (fn.endswith(".json") and fn[:-5].isdigit()):
             continue
         try:
-            with open(os.path.join(SESSIONS_DIR, fn)) as f:
+            with open(os.path.join(SESSIONS_DIR, fn), encoding="utf-8") as f:
                 d = json.load(f)
             pid, name = int(d.get("pid") or fn[:-5]), d.get("name")
             if not name:
                 continue
-            os.kill(pid, 0)  # raises if the process is gone
+            if not pid_alive(pid):
+                continue
         except (OSError, ValueError, json.JSONDecodeError):
             continue
         prev = out.get(name)
@@ -60,24 +117,29 @@ def live_sessions():
 
 
 def edit_registry(fn):
-    with open(REGISTRY + ".lock", "w") as lockf:
-        fcntl.flock(lockf, fcntl.LOCK_EX)
-        with open(REGISTRY) as f:
-            reg = json.load(f)
+    with open(REGISTRY + ".lock", "w", encoding="utf-8") as lockf:
+        lock_file(lockf)
+        reg = read_json(REGISTRY)
         result = fn(reg)
         tmp = REGISTRY + ".tmp"
-        with open(tmp, "w") as f:
+        with open(tmp, "w", encoding="utf-8") as f:
             json.dump(reg, f, indent=2)
             f.write("\n")
-        os.replace(tmp, REGISTRY)
+        for i in range(100):             # Windows: retry while a reader has the registry open
+            try:
+                os.replace(tmp, REGISTRY)
+                break
+            except PermissionError:
+                if not WINDOWS or i == 99:
+                    raise
+                time.sleep(0.02)
         return result
 
 
 def load_projects():
     projects, errors = [], []
     try:
-        with open(REGISTRY) as f:
-            reg = json.load(f)
+        reg = read_json(REGISTRY)
     except FileNotFoundError:
         return projects, errors
     except Exception as e:  # unreadable registry
@@ -86,8 +148,7 @@ def load_projects():
     for entry in reg.get("projects", []):
         path = entry.get("state")
         try:
-            with open(path) as f:
-                st = json.load(f)
+            st = read_json(path)
             st["events"] = st.get("events", [])[-EVENTS_SENT:]
             st["statePath"] = path
             st["archived"] = bool(entry.get("archived"))
@@ -166,7 +227,7 @@ class Handler(SimpleHTTPRequestHandler):
             return self.send_json(403, {"error": "gates open only when you type go in the orchestrator tab"})
         docs = os.path.dirname(st["statePath"])
         r = subprocess.run([sys.executable, BOARD, "--docs", docs, "answer", wid, "--answer", answer, "--from-app"],
-                           capture_output=True, text=True, timeout=30)
+                           capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=30)
         if r.returncode != 0:
             return self.send_json(409, {"error": (r.stderr or r.stdout).strip().replace("board: ", "")})
         print(f"answered {pid} {wid}: {answer}", flush=True)
@@ -212,6 +273,12 @@ def main():
     except OSError:
         print(f"Port {PORT} is busy: Conductor is probably already running.", flush=True)
         sys.exit(3)
+    try:  # lets `kill $(cat ~/.conductor/server.pid)` / `taskkill /PID` stop it
+        os.makedirs(os.path.dirname(REGISTRY), exist_ok=True)
+        with open(os.path.join(os.path.dirname(REGISTRY), "server.pid"), "w", encoding="utf-8") as f:
+            f.write(str(os.getpid()))
+    except OSError:
+        pass
     print(f"Conductor on http://127.0.0.1:{PORT}", flush=True)
     server.serve_forever()
 

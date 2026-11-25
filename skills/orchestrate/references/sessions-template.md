@@ -15,7 +15,8 @@ Placeholders (paths are absolute; paths may contain spaces, so they are always q
   `.git/info/exclude`)
 - `{{BUILD_DIRS}}` the build-output folders the plan names, relative to a copy (e.g. `dist .next`);
   may be empty
-- `{{BOARD}}` = `python3 "$HOME/.claude/skills/orchestrate/scripts/board.py" --docs "{{DOCS}}"`
+- `{{BOARD}}` = `python3 "$HOME/.claude/skills/orchestrate/scripts/board.py" --docs "{{DOCS}}"` (with the Python
+  command SKILL.md picked: `py -3` instead of `python3` on most Windows machines)
 - `{{NOTIFY}}` = `"$HOME/.claude/skills/orchestrate/scripts/notify.sh"`
 - `{{TEST_CMD}}` the full test command; `{{SETUP_CMD}}` what a fresh checkout needs first (install
   deps, link `.env`), or "nothing"
@@ -253,7 +254,7 @@ they will cross a gate, weaken a test or rewrite history.
 - Ping the user only for decisions, gates, stuck sessions, the build pausing, and the finish.
 - If every lane is idle or blocked waiting on them, ping once: "Build is paused until you answer
   D3." Remind at most every 2 hours.
-- `{{NOTIFY}}` exit 3 means only the Mac saw it; exit 1 means nothing did. Say so once in your
+- `{{NOTIFY}}` exit 3 means only this computer's desktop showed it; exit 1 means nothing did. Say so once in your
   session; don't retry in a loop.
 - After a usage-limit pause, when you're back: run the summary, PING everyone, resume.
 - A session that doesn't react to messages while idle: tell the user in one line to paste this into

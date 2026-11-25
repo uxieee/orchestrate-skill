@@ -10,7 +10,12 @@ STAMP="$(date +%Y%m%d-%H%M%S)"
 replace=0
 [ "${1:-}" = "--replace" ] && replace=1
 
-command -v python3 >/dev/null 2>&1 || { echo "python3 is required (board.py and Conductor use it)."; exit 1; }
+# Python 3: python3 on macOS/Linux; on Windows usually the py launcher (python3 can be a Store stub).
+PY=""
+for c in "python3" "py -3" "python"; do
+  if $c -c 'import sys; sys.exit(0 if sys.version_info[0] == 3 else 1)' >/dev/null 2>&1; then PY="$c"; break; fi
+done
+[ -n "$PY" ] || { echo "Python 3 is required (board.py and Conductor use it). Install it from python.org."; exit 1; }
 
 place() { # place <src> <dest>
   if [ -e "$2" ]; then
@@ -33,4 +38,8 @@ chmod +x "$CLAUDE/skills/orchestrate/scripts/notify.sh" "$HERE/conductor/Conduct
 mkdir -p "$HOME/.conductor"
 
 echo "installed: $CLAUDE/skills/orchestrate, orchestrate-builder and orchestrate-qa agents"
-echo "dashboard: python3 \"$HERE/conductor/server.py\"  then open http://127.0.0.1:4747/"
+echo "python: $PY  (the skill uses this command for board.py)"
+case "$(uname -s)" in
+  MINGW*|MSYS*|CYGWIN*) echo "dashboard: double-click conductor\\Conductor.cmd, or run: $PY \"$HERE/conductor/start.py\"" ;;
+  *) echo "dashboard: $PY \"$HERE/conductor/start.py\"" ;;
+esac

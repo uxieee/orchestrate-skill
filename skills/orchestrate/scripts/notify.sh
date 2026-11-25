@@ -1,12 +1,12 @@
 #!/bin/sh
-# Ping the user: Telegram message + macOS notification.
+# Ping the user: Telegram message + a desktop notification (macOS, Windows via Git Bash, or Linux).
 # Usage: notify.sh "<project> · <kind>" "<message>"
 #   kind is one of: decision needed, go needed, session stuck, paused, finished (anything else works too)
 #   In the message, put the ask first; an optional last sentence starting "Answer in" or "Check"
 #   becomes the action line.
 # Reads TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID from ~/.conductor/telegram.env. Never prints the token.
 # Exit 0: Telegram sent (seen anywhere).
-# Exit 3: only the Mac notification showed (seen only at the Mac) - say so in your terminal.
+# Exit 3: only the desktop notification showed (seen only at this computer) - say so in your terminal.
 # Exit 1: nothing reached the user.
 
 title="${1:-Conductor}"
@@ -66,6 +66,28 @@ if command -v osascript >/dev/null 2>&1; then
   esc() { printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'; }
   if osascript -e "display notification \"$(esc "$body")\" with title \"$(esc "$title")\" sound name \"Glass\"" >/dev/null 2>&1; then
     echo "mac: shown"; mac=1
+  fi
+fi
+
+# Windows (Git Bash): a tray balloon via PowerShell. Title and body go in through the environment,
+# never into the script text, so no quote in a message can break out of it.
+if [ "$mac" -eq 0 ] && command -v powershell.exe >/dev/null 2>&1; then
+  if NOTIFY_TITLE="$title" NOTIFY_BODY="$body" powershell.exe -NoProfile -NonInteractive -Command '
+    Add-Type -AssemblyName System.Windows.Forms, System.Drawing
+    $n = New-Object System.Windows.Forms.NotifyIcon
+    $n.Icon = [System.Drawing.SystemIcons]::Information
+    $n.Visible = $true
+    $n.ShowBalloonTip(10000, $env:NOTIFY_TITLE, $env:NOTIFY_BODY, "Info")
+    Start-Sleep -Seconds 5
+    $n.Dispose()' >/dev/null 2>&1; then
+    echo "windows: shown"; mac=1
+  fi
+fi
+
+# Linux desktop
+if [ "$mac" -eq 0 ] && command -v notify-send >/dev/null 2>&1; then
+  if notify-send "$title" "$body" >/dev/null 2>&1; then
+    echo "desktop: shown"; mac=1
   fi
 fi
 

@@ -21,13 +21,19 @@ the exact commit; lanes that never share files; gates that only the user opens.
   sessions can write at once; it refuses unsafe moves (done without a QA pass, a pass on the wrong
   commit, reopening done work); it shares test slots (`run`); it registers the project in
   `~/.conductor/projects.json`, which is how the Conductor app finds it. See `board.py --help`.
-- `scripts/notify.sh "<title>" "<message>"` pings the user on Telegram plus a Mac notification. Exit 0
-  Telegram sent, 3 Mac only, 1 nothing. Credentials are in `~/.conductor/telegram.env`; never read,
+- `scripts/notify.sh "<title>" "<message>"` pings the user on Telegram plus a desktop notification
+  (macOS, Windows or Linux). Exit 0 Telegram sent, 3 desktop only, 1 nothing. Credentials are in `~/.conductor/telegram.env`; never read,
   print or copy that file's values.
 
 Always call them with full quoted paths, one command per line (zsh doesn't split `$VAR` commands,
 and paths often contain spaces):
 `python3 "$HOME/.claude/skills/orchestrate/scripts/board.py" --docs "<abs docs>" <command> …`
+
+**Python command.** Before step 3, run `python3 --version`. If it doesn't print `Python 3.x` (common
+on Windows, where `python3` is often missing or a Microsoft Store stub), try `py -3 --version`, then
+`python --version`, and use the first that prints Python 3. Use that command wherever this skill or
+the templates say `python3`, including `{{BOARD}}`. On Windows, Claude Code runs commands in Git Bash,
+so `$HOME`, forward slashes and `"$HOME/.claude/..."` paths work as written.
 
 ## Workflow
 
@@ -147,13 +153,19 @@ Then:
 
 Run this exact command. It only counts lines and never shows a value, so it is safe:
 `grep -c '^\(export \)\{0,1\}TELEGRAM_[A-Z_]*=.' ~/.conductor/telegram.env`. It should print 2.
-If not, tell them the build works but pings will only reach the Mac.
+If not, tell them the build works but pings will only reach this computer.
 
 Offer, in one line, a watchdog that pings them if the orchestrator's heartbeat goes silent for 45
-minutes (its loop stops on usage limits, closed tabs and loop expiry). Only on a yes, install a
-launchd agent running `board.py --docs "<docs>" watchdog` every 15 minutes
-(`~/Library/LaunchAgents/com.conductor.<id>.watchdog.plist`, `StartInterval` 900, then
-`launchctl load` it), and tell them how to remove it (`launchctl unload` + delete the file).
+minutes (its loop stops on usage limits, closed tabs and loop expiry). Only on a yes, schedule
+`board.py --docs "<docs>" watchdog` every 15 minutes, and tell them how to remove it:
+- **macOS**: a launchd agent, `~/Library/LaunchAgents/com.conductor.<id>.watchdog.plist`,
+  `StartInterval` 900, then `launchctl load` it. Remove: `launchctl unload` + delete the file.
+- **Windows**: write `<docs>/watchdog.cmd` with one line, `@<python> "<board.py>" --docs "<docs>" watchdog`
+  (Windows paths: `cygpath -w "<path>"` gives them; `<python>` as picked above), then
+  `MSYS_NO_PATHCONV=1 schtasks /Create /SC MINUTE /MO 15 /TN "conductor-<id>-watchdog" /TR "\"<docs as Windows path>\watchdog.cmd\"" /F`
+  (`MSYS_NO_PATHCONV=1` stops Git Bash rewriting the `/` switches). Check: `MSYS_NO_PATHCONV=1 schtasks /Query /TN "conductor-<id>-watchdog"`.
+  Remove: `MSYS_NO_PATHCONV=1 schtasks /Delete /TN "conductor-<id>-watchdog" /F` + delete the file.
+- **Linux**: a crontab line, `*/15 * * * * python3 "<board.py>" --docs "<docs>" watchdog`. Remove the line.
 
 ### 5. Hand over
 

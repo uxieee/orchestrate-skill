@@ -13,14 +13,23 @@ Stdlib only. `board.py --help`, `board.py <command> --help`.
 """
 import argparse
 import datetime as dt
-import fcntl
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
 import time
+
+try:                      # macOS / Linux
+    import fcntl
+    msvcrt = None
+except ImportError:       # Windows
+    fcntl = None
+    import msvcrt
+
+WINDOWS = os.name == "nt"
 
 TASK_STATES = ["todo", "assigned", "progress", "qa", "fail", "blocked", "done"]
 BUSY_STATES = ("assigned", "progress", "fail")          # a lane with one of these gets no new START
@@ -99,6 +108,82 @@ def check_args(a):
 
 
 
+# ---------- portability (macOS, Linux, Windows) ----------
+
+def lock_file(f, exclusive=True, block=True):
+    """Advisory lock on an open file. Windows has no shared locks: readers lock exclusively there.
+    Raises BlockingIOError when block=False and someone else holds it."""
+    if fcntl:
+        fcntl.flock(f, (fcntl.LOCK_EX if exclusive else fcntl.LOCK_SH) | (0 if block else fcntl.LOCK_NB))
+        return
+    f.seek(0)
+    while True:
+        try:
+            msvcrt.locking(f.fileno(), msvcrt.LK_NBLCK, 1)
+            return
+        except OSError:
+            if not block:
+                raise BlockingIOError("locked")
+            time.sleep(0.05)
+
+
+def unlock_file(f):
+    if fcntl:
+        fcntl.flock(f, fcntl.LOCK_UN)
+        return
+    try:
+        f.seek(0)
+        msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, 1)
+    except OSError:
+        pass
+
+
+def replace_file(src, dst):
+    """os.replace, retried on Windows while another process (Conductor) has dst open for reading."""
+    for i in range(100):
+        try:
+            os.replace(src, dst)
+            return
+        except PermissionError:
+            if not WINDOWS or i == 99:
+                raise
+            time.sleep(0.02)
+
+
+def pid_alive(pid):
+    """True if the process exists. Never signals it (os.kill(pid, 0) on Windows sends Ctrl+C)."""
+    if not pid or pid <= 0:
+        return False
+    if WINDOWS:
+        import ctypes
+        k = ctypes.windll.kernel32
+        h = k.OpenProcess(0x1000, False, int(pid))  # PROCESS_QUERY_LIMITED_INFORMATION
+        if not h:
+            return False
+        code = ctypes.c_ulong()
+        ok = k.GetExitCodeProcess(h, ctypes.byref(code))
+        k.CloseHandle(h)
+        return bool(ok) and code.value == 259     # STILL_ACTIVE
+    try:
+        os.kill(pid, 0)
+        return True
+    except PermissionError:
+        return True
+    except OSError:
+        return False
+
+
+def shell_script_cmd(path):
+    """How to run a .sh file: directly on macOS/Linux, through Git Bash on Windows."""
+    if not WINDOWS:
+        return [path]
+    for b in (os.path.expandvars(r"%ProgramFiles%\Git\bin\bash.exe"), os.path.expandvars(r"%ProgramFiles(x86)%\Git\bin\bash.exe"),
+              os.path.expandvars(r"%LOCALAPPDATA%\Programs\Git\bin\bash.exe"), shutil.which("bash")):
+        if b and os.path.isfile(b) and "system32" not in b.lower():   # System32\bash.exe is WSL, not Git Bash
+            return [b, path]
+    return None
+
+
 # ---------- storage ----------
 
 def state_path(docs):
@@ -107,11 +192,11 @@ def state_path(docs):
 
 def save(path, obj):
     fd, tmp = tempfile.mkstemp(dir=os.path.dirname(path), prefix=".state.", suffix=".tmp")
-    with os.fdopen(fd, "w") as f:
+    with os.fdopen(fd, "w", encoding="utf-8") as f:
         json.dump(obj, f, indent=2, ensure_ascii=False)
         f.write("\n")
     os.chmod(tmp, 0o644)
-    os.replace(tmp, path)
+    replace_file(tmp, path)
 
 
 class Board:
@@ -125,9 +210,9 @@ class Board:
     def __enter__(self):
         if not os.path.exists(self.path):
             die(f"no state.json in {self.docs} (run `board.py init` first)")
-        self.lockf = open(self.path + ".lock", "w")
-        fcntl.flock(self.lockf, fcntl.LOCK_EX if self.write else fcntl.LOCK_SH)
-        with open(self.path) as f:
+        self.lockf = open(self.path + ".lock", "w", encoding="utf-8")
+        lock_file(self.lockf, exclusive=self.write)
+        with open(self.path, encoding="utf-8") as f:
             self.state = json.load(f)
         return self.state
 
@@ -138,7 +223,7 @@ class Board:
                 save(self.path, self.state)
                 render(self.docs, self.state)
         finally:
-            fcntl.flock(self.lockf, fcntl.LOCK_UN)
+            unlock_file(self.lockf)
             self.lockf.close()
         return False
 
@@ -163,11 +248,11 @@ def need_task(state, tid):
 
 def register(state, docs):
     os.makedirs(os.path.dirname(REGISTRY), exist_ok=True)
-    with open(REGISTRY + ".lock", "w") as lockf:
-        fcntl.flock(lockf, fcntl.LOCK_EX)
+    with open(REGISTRY + ".lock", "w", encoding="utf-8") as lockf:
+        lock_file(lockf)
         reg = {"version": 1, "projects": []}
         if os.path.exists(REGISTRY):
-            with open(REGISTRY) as f:
+            with open(REGISTRY, encoding="utf-8") as f:
                 reg = json.load(f)
         sp = state_path(docs)
         reg["projects"] = [p for p in reg.get("projects", []) if p.get("state") != sp]
@@ -285,9 +370,9 @@ def render(docs, state):
     L += [f"- {e['at']} · {e['who']} · {e['text']}" for e in state.get("events", [])[-15:][::-1]]
     L.append("")
     tmp = os.path.join(docs, ".STATUS.md.tmp")
-    with open(tmp, "w") as f:
+    with open(tmp, "w", encoding="utf-8") as f:
         f.write("\n".join(L))
-    os.replace(tmp, os.path.join(docs, "STATUS.md"))
+    replace_file(tmp, os.path.join(docs, "STATUS.md"))
 
 
 # ---------- commands ----------
@@ -297,7 +382,7 @@ def cmd_init(a):
     os.makedirs(os.path.join(docs, "lanes"), exist_ok=True)
     p = state_path(docs)
     if os.path.exists(p) and not a.force:
-        with open(p) as f:
+        with open(p, encoding="utf-8") as f:
             register(json.load(f), docs)
         print(f"exists: {p} (registered again; --force resets it)")
         return
@@ -505,8 +590,9 @@ def cmd_wait_answer(a):
     instead of the answer waiting for the next loop check. Each answer is reported once."""
     path = state_path(a.docs)
     last = None
+    parent = os.getppid()
     while True:
-        if os.getppid() == 1:              # the session that started this is gone
+        if os.getppid() == 1 or (WINDOWS and not pid_alive(parent)):   # the session that started this is gone
             sys.exit(4)
         try:
             m = os.stat(path).st_mtime
@@ -603,8 +689,12 @@ def cmd_watchdog(a):
         return
     msg = (f"No orchestrator heartbeat for {fmt_age(m)}." if m is not None else "The orchestrator has never written a heartbeat.") + \
           f" Check the {sid}-orchestrator tab: its loop may have stopped (usage limit, closed tab, or expired loop)."
-    subprocess.run([NOTIFY, f"{name} · orchestrator silent", msg])
-    open(flag, "w").close()
+    runner = shell_script_cmd(NOTIFY)
+    if runner:
+        subprocess.run(runner + [f"{name} · orchestrator silent", msg])
+    else:
+        print("can't ping: Git Bash not found (notify.sh needs it on Windows)", file=sys.stderr)
+    open(flag, "w", encoding="utf-8").close()
 
 
 def run_stats(st):
@@ -638,10 +728,10 @@ def cmd_stats(a):
     """One build's numbers, or every registered build with --all (JSON lines with --json)."""
     rows = []
     if a.all:
-        reg = json.load(open(REGISTRY)) if os.path.exists(REGISTRY) else {}
+        reg = json.load(open(REGISTRY, encoding="utf-8")) if os.path.exists(REGISTRY) else {}
         for p in reg.get("projects", []):
             if os.path.exists(p["state"]):
-                rows.append(run_stats(json.load(open(p["state"]))))
+                rows.append(run_stats(json.load(open(p["state"], encoding="utf-8"))))
     else:
         with Board(a.docs, write=False) as st:
             rows.append(run_stats(st))
@@ -662,6 +752,8 @@ def cmd_run(a):
     if not a.cmd:
         die("usage: board.py run [--pool NAME] [--slots N] -- <command ...>")
     cmd = a.cmd[1:] if a.cmd[0] == "--" else a.cmd
+    if WINDOWS and cmd and shutil.which(cmd[0]):
+        cmd = [shutil.which(cmd[0])] + cmd[1:]
     docs = os.path.abspath(a.docs)
     pool = a.pool or "tests"
     if not pool.replace("-", "").isalnum():
@@ -669,9 +761,9 @@ def cmd_run(a):
     waited = 0
     while True:
         for i in range(a.slots):
-            f = open(os.path.join(docs, f".{pool}.{i}.lock"), "w")
+            f = open(os.path.join(docs, f".{pool}.{i}.lock"), "w", encoding="utf-8")
             try:
-                fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                lock_file(f, block=False)
             except BlockingIOError:
                 f.close()
                 continue
@@ -682,7 +774,7 @@ def cmd_run(a):
                     die(f"--cwd {a.cwd} is not a folder")
                 sys.exit(subprocess.call(cmd, cwd=a.cwd or None))
             finally:
-                fcntl.flock(f, fcntl.LOCK_UN)
+                unlock_file(f)
                 f.close()
         time.sleep(5)
         waited += 5
@@ -695,7 +787,7 @@ def cmd_render(a):
 
 
 def _nested(p, q):
-    p, q = os.path.normpath(p).rstrip("/"), os.path.normpath(q).rstrip("/")
+    p, q = os.path.normpath(p).replace("\\", "/").rstrip("/"), os.path.normpath(q).replace("\\", "/").rstrip("/")
     return p == q or q.startswith(p + "/") or p.startswith(q + "/")
 
 
@@ -826,6 +918,11 @@ def main():
     p = sub.add_parser("render", help="re-render STATUS.md"); p.set_defaults(f=cmd_render)
     p = sub.add_parser("validate", help="check lanes, ownership overlap, dependencies"); p.set_defaults(f=cmd_validate)
 
+    for s in (sys.stdout, sys.stderr):
+        try:
+            s.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass
     a = ap.parse_args()
     if not a.docs and not getattr(a, "all", False):
         die("pass --docs <absolute docs folder> (or set BOARD_DOCS)")
