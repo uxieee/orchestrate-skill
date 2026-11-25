@@ -52,7 +52,8 @@ echo "$reg" | grep -q 'demo'; check $? "registered in ~/.conductor/projects.json
 "$HOME/.claude/skills/orchestrate/scripts/notify.sh" "Demo · finished" "Pings work. Check the tab."; rc=$?
 [ "$rc" = 3 ] || [ "$rc" = 1 ]; check $? "notify.sh runs directly in Git Bash (exit $rc)"
 
-# Watchdog with the exact schtasks line from SKILL.md step 4
+# Watchdog with the exact schtasks line from SKILL.md step 4 (needs open required work to watch)
+B task-add T3 --title "Still open" --lane api >/dev/null
 WDOCS="$(cygpath -w "$DOCS")"
 PYEXE="$($PY -c 'import sys; print(sys.executable)')"
 printf '@"%s" "%s" --docs "%s" watchdog >> "%s\\watchdog.log" 2>&1\r\n' "$PYEXE" "$(cygpath -w "$HOME/.claude/skills/orchestrate/scripts/board.py")" "$WDOCS" "$WDOCS" > "$DOCS/watchdog.cmd"
@@ -62,6 +63,7 @@ MSYS_NO_PATHCONV=1 schtasks /Query /TN "$TASK" >/dev/null; check $? "schtasks /Q
 MSYS_NO_PATHCONV=1 schtasks /Run /TN "$TASK" >/dev/null
 for i in $(seq 1 60); do [ -f "$DOCS/.watchdog-pinged" ] && break; sleep 1; done
 [ -f "$DOCS/.watchdog-pinged" ]; check $? "scheduled watchdog ran and pinged"
+MSYS_NO_PATHCONV=1 schtasks /Query /TN "$TASK" /V /FO LIST | grep -iE "Last (Run Time|Result)" | sed 's/^/   /'
 [ -f "$DOCS/watchdog.log" ] && { echo "   watchdog.log:"; sed 's/^/   /' "$DOCS/watchdog.log"; }
 MSYS_NO_PATHCONV=1 schtasks /Delete /TN "$TASK" /F >/dev/null; check $? "schtasks /Delete"
 
