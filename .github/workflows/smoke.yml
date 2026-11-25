@@ -19,3 +19,7 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: End-to-end smoke test
         run: python tests/smoke.py
+      - name: Git Bash, the way Claude Code on Windows runs the skill
+        if: runner.os == 'Windows'
+        shell: bash
+        run: tests/gitbash_smoke.sh
