@@ -34,9 +34,10 @@ same gates, fewer tabs to watch.
 
 - Claude Code. Multi-tab builds need sessions that can message each other (`SendMessage`,
   `ListAgents`) and `/loop`. One-tab builds only need the Agent tool.
-- Python 3 (stdlib only, no installs).
-- macOS for the extras: Mac notifications, the launchd watchdog and the `Conductor.app` launcher.
-  The board and the dashboard run anywhere Python does.
+- Python 3.9 or newer (stdlib only, no installs).
+- **Windows, macOS or Linux.** Tested on all three on every push (`tests/smoke.py` in CI). On
+  Windows you need [Git for Windows](https://git-scm.com/download/win), which Claude Code needs
+  anyway: the skill's commands run in Git Bash. Python from python.org (the `py` launcher) is fine.
 
 ## Install
 
@@ -45,6 +46,9 @@ git clone https://github.com/uxieee/orchestrate-skill.git
 cd orchestrate-skill
 ./install.sh
 ```
+
+On Windows, run those three lines in **Git Bash**. The installer finds your Python (`python3`,
+`py -3` or `python`) and tells you which one the skill will use.
 
 This copies the skill to `~/.claude/skills/orchestrate` and the two helper agents to
 `~/.claude/agents/`. If you already have them, it stops. `./install.sh --replace` moves the old
@@ -66,11 +70,16 @@ pick the models. The skill never chooses models for you.
 ## Conductor (the dashboard)
 
 ```sh
-python3 conductor/server.py          # then open http://127.0.0.1:4747/
+python3 conductor/start.py           # starts it in the background and opens http://127.0.0.1:4747/
 ```
 
-Or double-click `conductor/Conductor.command`, or run `conductor/build-app.sh` once to get a
-`/Applications/Conductor.app` that starts it. Add `?demo` to the URL to see it with fake data.
+- **Windows**: double-click `conductor\Conductor.cmd`.
+- **macOS**: double-click `conductor/Conductor.command`, or run `conductor/build-app.sh` once to get
+  a `/Applications/Conductor.app` that starts it.
+
+It keeps running in the background until you log out (log: `~/.conductor/server.log`). To stop it:
+`kill $(cat ~/.conductor/server.pid)`, or on Windows `taskkill /PID <the number in server.pid>`.
+Add `?demo` to the URL to see it with fake data.
 
 It shows every registered build: progress, what each session is doing, which ones went quiet,
 and what's waiting on you. You can answer decisions there. **Gates can't be opened from the
@@ -87,7 +96,8 @@ Not affiliated with conductor.build.
 ## Pings (optional)
 
 The orchestrator pings you when it needs a decision or a go, when a session is stuck, and when
-the build finishes. Without setup you get Mac notifications only. For Telegram, create a bot with
+the build finishes. Without setup you get desktop notifications only (macOS, Windows, or Linux with
+`notify-send`). For Telegram, create a bot with
 @BotFather, then:
 
 ```sh
@@ -100,13 +110,14 @@ chmod 600 ~/.conductor/telegram.env
 ```
 
 Test it: `~/.claude/skills/orchestrate/scripts/notify.sh "test · finished" "Pings work."`
-(exit 0 = Telegram sent, 3 = Mac only, 1 = nothing).
+(exit 0 = Telegram sent, 3 = desktop only, 1 = nothing). On Windows, run it in Git Bash.
 
 ## Watchdog (optional)
 
 The orchestrator's loop can stop (usage limits, a closed tab). The skill offers a watchdog that
-pings you if its heartbeat goes quiet for 45 minutes. On a Mac it installs a launchd agent. On
-Linux, add a cron line instead:
+pings you if its heartbeat goes quiet for 45 minutes. Say yes and it sets it up for your OS: a
+launchd agent on macOS, a Task Scheduler task on Windows (`schtasks`), and it tells you how to
+remove it. On Linux, add a cron line yourself:
 
 ```sh
 */15 * * * * python3 ~/.claude/skills/orchestrate/scripts/board.py --docs "/abs/path/to/docs" watchdog
@@ -119,9 +130,10 @@ Linux, add a cron line instead:
 | `skills/orchestrate/SKILL.md` | the skill: plan → lanes → project folder → hand-over |
 | `skills/orchestrate/references/` | `SESSIONS.md` (multi-tab) and `SOLO.md` (one-tab) templates |
 | `skills/orchestrate/scripts/board.py` | the board: locked JSON, refuses unsafe moves, shared test slots, stats |
-| `skills/orchestrate/scripts/notify.sh` | Telegram + Mac notification |
+| `skills/orchestrate/scripts/notify.sh` | Telegram + desktop notification |
 | `agents/` | `orchestrate-builder` and `orchestrate-qa`, the one-tab helpers |
-| `conductor/` | the dashboard: `server.py` + `ui/` |
+| `conductor/` | the dashboard: `server.py` + `ui/`, launched by `start.py` / `Conductor.cmd` / `Conductor.command` |
+| `tests/smoke.py` | end-to-end test on the real OS: `python tests/smoke.py` |
 
 `board.py --help` lists every command. `board.py stats` gives first-pass QA yield, fails per task and
 fail classes for a build (`--all` for every build), so you can judge changes to the skill on
