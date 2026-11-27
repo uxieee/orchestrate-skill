@@ -37,7 +37,7 @@ place "$HERE/agents/orchestrate-qa.md" "$CLAUDE/agents/orchestrate-qa.md"
 chmod +x "$CLAUDE/skills/orchestrate/scripts/notify.sh" "$HERE/conductor/Conductor.command" 2>/dev/null || true
 mkdir -p "$HOME/.conductor"
 
-echo "installed: $CLAUDE/skills/orchestrate, orchestrate-builder and orchestrate-qa agents"
+echo "installed orchestrate $(cat "$HERE/skills/orchestrate/VERSION"): $CLAUDE/skills/orchestrate, orchestrate-builder and orchestrate-qa agents"
 echo "python: $PY  (the skill uses this command for board.py)"
 case "$(uname -s)" in
   MINGW*|MSYS*|CYGWIN*) echo "dashboard: double-click conductor\\Conductor.cmd, or run: $PY \"$HERE/conductor/start.py\"" ;;

@@ -10,6 +10,7 @@ Scheduler. Everything it creates lives in one temp folder that it removes at the
 """
 import json
 import os
+import re
 import shutil
 import socket
 import subprocess
@@ -72,6 +73,12 @@ def main():
         check(r.returncode == 0, f"install.sh exits 0 ({r.stderr.strip()[-200:]})")
         board = os.path.join(home, ".claude", "skills", "orchestrate", "scripts", "board.py")
         check(os.path.isfile(board), "board.py installed under the home folder")
+        with open(os.path.join(ROOT, "skills", "orchestrate", "VERSION"), encoding="utf-8") as f:
+            version = f.read().strip()
+        check(re.fullmatch(r"\d+\.\d+\.\d+", version) is not None, f"VERSION is x.y.z ({version})")
+        check(f"installed orchestrate {version}:" in r.stdout, "install.sh reports the version")
+        tag = os.environ.get("GITHUB_REF_NAME", "") if os.environ.get("GITHUB_REF_TYPE") == "tag" else ""
+        check(not tag or tag == "v" + version, f"release tag matches VERSION ({tag or 'not a tag'})")
         r = sh([bash, os.path.join(ROOT, "install.sh")])
         check(r.returncode == 1 and "already installed" in r.stdout, "second install refuses")
 

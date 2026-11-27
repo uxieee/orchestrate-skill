@@ -54,6 +54,10 @@ This copies the skill to `~/.claude/skills/orchestrate` and the two helper agent
 `~/.claude/agents/`. If you already have them, it stops. `./install.sh --replace` moves the old
 copies aside (`*.bak-<timestamp>`) and installs. It never deletes anything.
 
+The version is in `skills/orchestrate/VERSION` (the installer prints it) and matches the
+[release](https://github.com/uxieee/orchestrate-skill/releases) tag. To update: `git pull`, then
+`./install.sh --replace`.
+
 ## Use
 
 Get a plan with a task list first (ids, titles, dependencies, the files each task touches).
